@@ -25,6 +25,8 @@
 
 #include "../include/global.h"
 #include "../include/logger.h"
+#include <assert.h>
+#include <string.h>
 
 using namespace std;
 
@@ -37,13 +39,36 @@ using namespace std;
  */
 int main(int argc, char **argv)
 {
+	//TODO: fix dependecy for init_log and fclose
 	/*Init. Logger*/
-	cse4589_init_log(argv[2]);
+	//cse4589_init_log(argv[2]);
 
 	/* Clear LOGFILE*/
-    fclose(fopen(LOGFILE, "w"));
+    //fclose(fopen(LOGFILE, "w"));
 
 	/*Start Here*/
+    /* Reading the input arguments for server vs client application decision*/
+    /* Input Param : type_of_application port_number*/
+    assert (argc==3);
+
+    char *typeOfApp = argv[1];
+    char *portNum = argv[2];
+
+    if (strcmp(typeOfApp,"c") == 0)
+    {
+    	cout << "It is a client \n";
+    }
+    else if (strcmp(typeOfApp,"s") == 0)
+    {
+    	cout << "It is a server \n";
+    }
+    else
+    {
+    	cout << "Not a valid input for type of application \n";
+    }
+    
+    cout << "The type of port " <<portNum<<"\n";
+
 	
 	return 0;
 }
