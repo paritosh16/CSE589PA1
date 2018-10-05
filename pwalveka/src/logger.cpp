@@ -26,7 +26,7 @@
 #include <stdarg.h>
 #include <time.h>
 #include <unistd.h>
-#include <mach-o/dyld.h>
+//#include <mach-o/dyld.h>
 
 #include "../include/global.h"
 #include "../include/logger.h"

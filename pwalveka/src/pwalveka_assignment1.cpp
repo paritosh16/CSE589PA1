@@ -30,6 +30,7 @@
 #include <cstring>
 #include <unistd.h>
 #include <assert.h>
+#include <sstream>
 
 #include "../include/server.h"
 #include "../include/global.h"
@@ -71,7 +72,6 @@ int main(int argc, char **argv)
 
     if (strcmp(type_of_app, "c") == 0)
     {
-    	cout << "It is a client \n";
         // Create a socket for the client to listen on the client.
         int port, server_socket, head_socket, selret, sock_index, fdaccept=0;
         struct sockaddr_in server_addr, client_addr;
@@ -119,6 +119,7 @@ int main(int argc, char **argv)
 
             // The result string that will be printed and logged.
             char result_string[1024];
+            string tokenized_command[100];
 
             // Accept the input from the user. 
             char *msg = (char*) malloc(sizeof(char)* MSG_SIZE);
@@ -140,76 +141,76 @@ int main(int argc, char **argv)
                     sprintf(result_string, "[%s:END]\n", msg);
                     cse4589_print_and_log(result_string);
 
-            }
+            } else {
+                memcpy(&watch_list, &master_list, sizeof(master_list));
 
-            memcpy(&watch_list, &master_list, sizeof(master_list));
+                /* select() system call. This will BLOCK */
+                selret = select(head_socket + 1, &watch_list, NULL, NULL, NULL);
+                if(selret < 0)
+                perror("select failed.");
 
-            /* select() system call. This will BLOCK */
-            selret = select(head_socket + 1, &watch_list, NULL, NULL, NULL);
-            if(selret < 0)
-            perror("select failed.");
+                /* Check if we have sockets/STDIN to process */
+                if(selret > 0){
+                /* Loop through socket descriptors to check which ones are ready */
+                for(sock_index = 0; sock_index <= head_socket; sock_index += 1){
 
-            /* Check if we have sockets/STDIN to process */
-            if(selret > 0){
-            /* Loop through socket descriptors to check which ones are ready */
-            for(sock_index = 0; sock_index <= head_socket; sock_index += 1){
+                    if(FD_ISSET(sock_index, &watch_list)){
 
-                if(FD_ISSET(sock_index, &watch_list)){
+                    /* Check if new command on STDIN */
+                    if (sock_index == STDIN){
+                        char *cmd = (char*) malloc(sizeof(char)*CMD_SIZE);
 
-                /* Check if new command on STDIN */
-                if (sock_index == STDIN){
-                    char *cmd = (char*) malloc(sizeof(char)*CMD_SIZE);
+                        memset(cmd, '\0', CMD_SIZE);
+                        if(fgets(cmd, CMD_SIZE-1, stdin) == NULL) //Mind the newline character that will be written to cmd
+                        exit(-1);
 
-                    memset(cmd, '\0', CMD_SIZE);
-                    if(fgets(cmd, CMD_SIZE-1, stdin) == NULL) //Mind the newline character that will be written to cmd
-                    exit(-1);
+                        printf("\nI got: %s\n", cmd);
 
-                    printf("\nI got: %s\n", cmd);
+                        //Process PA1 commands here ...
 
-                    //Process PA1 commands here ...
-
-                    free(cmd);
-                }
-                /* Check if new client is requesting connection */
-                else if(sock_index == server_socket){
-                    caddr_len = sizeof(client_addr);
-                    fdaccept = accept(server_socket, (struct sockaddr *)&client_addr, &caddr_len);
-                    if(fdaccept < 0)
-                    perror("Accept failed.");
-
-                    printf("\nRemote Host connected!\n");
-
-                    /* Add to watched socket list */
-                    FD_SET(fdaccept, &master_list);
-                    if(fdaccept > head_socket) head_socket = fdaccept;
-                }
-                /* Read from existing clients */
-                else{
-                    /* Initialize buffer to receieve response */
-                    char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
-                    memset(buffer, '\0', BUFFER_SIZE);
-
-                    if(recv(sock_index, buffer, BUFFER_SIZE, 0) <= 0){
-                    close(sock_index);
-                    printf("Remote Host terminated connection!\n");
-
-                    /* Remove from watched list */
-                    FD_CLR(sock_index, &master_list);
+                        free(cmd);
                     }
-                    else {
-                    //Process incoming data from existing clients here ...
+                    /* Check if new client is requesting connection */
+                    else if(sock_index == server_socket){
+                        caddr_len = sizeof(client_addr);
+                        fdaccept = accept(server_socket, (struct sockaddr *)&client_addr, &caddr_len);
+                        if(fdaccept < 0)
+                        perror("Accept failed.");
 
-                    printf("\nClient sent me: %s\n", buffer);
-                    printf("ECHOing it back to the remote host ... ");
-                    if(send(sock_index, buffer, strlen(buffer), 0) == strlen(buffer))
-                        printf("Done!\n");
-                    fflush(stdout);
+                        printf("\nRemote Host connected!\n");
+
+                        /* Add to watched socket list */
+                        FD_SET(fdaccept, &master_list);
+                        if(fdaccept > head_socket) head_socket = fdaccept;
                     }
+                    /* Read from existing clients */
+                    else{
+                        /* Initialize buffer to receieve response */
+                        char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+                        memset(buffer, '\0', BUFFER_SIZE);
 
-                    free(buffer);
+                        if(recv(sock_index, buffer, BUFFER_SIZE, 0) <= 0){
+                        close(sock_index);
+                        printf("Remote Host terminated connection!\n");
+
+                        /* Remove from watched list */
+                        FD_CLR(sock_index, &master_list);
+                        }
+                        else {
+                        //Process incoming data from existing clients here ...
+
+                        printf("\nClient sent me: %s\n", buffer);
+                        printf("ECHOing it back to the remote host ... ");
+                        if(send(sock_index, buffer, strlen(buffer), 0) == strlen(buffer))
+                            printf("Done!\n");
+                        fflush(stdout);
+                        }
+
+                        free(buffer);
+                    }
+                    }
                 }
                 }
-            }
             }
         } while(TRUE);
         
