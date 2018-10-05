@@ -3,5 +3,6 @@
 
 #define HOSTNAME_LEN 128
 #define PATH_LEN 256
+#define AUTHOR_COMMAND "AUTHOR"
 
 #endif

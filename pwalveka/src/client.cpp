@@ -27,11 +27,11 @@
 #include <string.h>
 #include <arpa/inet.h>
 
+#include "../include/client.h"
+
 #define TRUE 1
 #define MSG_SIZE 256
 #define BUFFER_SIZE 256
-
-int connect_to_host(char *server_ip, int server_port);
 
  /**
  * main function
@@ -40,7 +40,7 @@ int connect_to_host(char *server_ip, int server_port);
  * @param  argv The argument list
  * @return 0 EXIT_SUCCESS
  */
-int main(int argc, char **argv)
+int client_starter_function(int argc, char **argv)
 {
 	if(argc != 3) {
 		printf("Usage:%s [ip] [port]\n", argv[0]);

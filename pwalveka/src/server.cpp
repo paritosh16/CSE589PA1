@@ -22,12 +22,15 @@
  * Uses the select() API to multiplex between network I/O and STDIN.
  */
 #include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <strings.h>
 #include <string.h>
 #include <unistd.h>
+
+#include "../include/server.h"
 
 #define BACKLOG 5
 #define STDIN 0
@@ -42,7 +45,7 @@
  * @param  argv The argument list
  * @return 0 EXIT_SUCCESS
  */
-int main(int argc, char **argv)
+int server_starter_function(int argc, char **argv)
 {
   if(argc != 2) {
     printf("Usage:%s [port]\n", argv[0]);
