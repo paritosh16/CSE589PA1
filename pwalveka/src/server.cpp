@@ -33,6 +33,9 @@
 #include <arpa/inet.h>
 
 #include "../include/server.h"
+#include "../include/logger.h"
+#include "../include/global.h"
+#include "../include/helper.h"
 
 #define BACKLOG 5
 #define STDIN 0
@@ -49,12 +52,16 @@ int populate_ip_address(char *device_hostname,char *device_ip_address);
  * @param  argv The argument list
  * @return 0 EXIT_SUCCESS
  */
+
 int server_starter_function(int argc, char **argv)
 {
-  if(argc != 2) {
-    printf("Usage:%s [port]\n", argv[0]);
+  if(argc != 3) {
+    printf("Usage:%s [mode] [port]\n", argv[0]);
     exit(-1);
   }
+
+  /*Init. Logger*/
+	cse4589_init_log(argv[2]);
 
   int port, server_socket, head_socket, selret, sock_index, fdaccept=0;
   struct sockaddr_in server_addr, client_addr;
@@ -124,14 +131,33 @@ int server_starter_function(int argc, char **argv)
           if (sock_index == STDIN){
             char *cmd = (char*) malloc(sizeof(char)*CMD_SIZE);
 
+          	// The result string that will be printed and logged.
+	          char result_string[1024];
+
             memset(cmd, '\0', CMD_SIZE);
             if(fgets(cmd, CMD_SIZE-1, stdin) == NULL) //Mind the newline character that will be written to cmd
               exit(-1);
 
-            printf("\nI got: %s\n", cmd);
+            // Get rid of the newline character if there is one.
+            int len = strlen(cmd); //where buff is your char array fgets is using
+            if(cmd[len-1]=='\n')
+                cmd[len-1]='\0';
+
+            //printf("\nI got: %s\n", cmd);
 
             //Process PA1 commands here ...
+            // Check for the author command.
+            if (strcmp(cmd, AUTHOR_COMMAND) == 0) {
+                    sprintf(result_string, "[%s:SUCCESS]\n", cmd);
+                    cse4589_print_and_log(result_string);
+                    sprintf(result_string, author_command());
+                    cse4589_print_and_log(result_string);
+                    sprintf(result_string, "[%s:END]\n", cmd);
+                    cse4589_print_and_log(result_string);
 
+            } else {
+              
+            }
             free(cmd);
           }
           /* Check if new client is requesting connection */

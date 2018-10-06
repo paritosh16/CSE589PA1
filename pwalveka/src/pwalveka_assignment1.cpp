@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 {
 	//TODO: fix dependecy for init_log and fclose
 	/*Init. Logger*/
-	cse4589_init_log(argv[2]);
+	//cse4589_init_log(argv[2]);
 
 	/* Clear LOGFILE*/
     //fclose(fopen(LOGFILE, "w"));
@@ -73,69 +73,38 @@ int main(int argc, char **argv)
     if (strcmp(type_of_app, "c") == 0)
     {
         // Mode of the application is client.
-        
-        // The result string that will be printed and logged.
-        char result_string[1024];
-
-        while(TRUE){
-            printf("\n[PA1-Client@CSE489/589]$ ");
-            fflush(stdout);
-
-            char *msg = (char*) malloc(sizeof(char)*MSG_SIZE);
-            memset(msg, '\0', MSG_SIZE);
-            if(fgets(msg, MSG_SIZE-1, stdin) == NULL) //Mind the newline character that will be written to msg
-                exit(-1);
-
-            // Get rid of the newline character if there is one.
-            int len = strlen(msg); //where buff is your char array fgets is using
-            if(msg[len-1]=='\n')
-                msg[len-1]='\0';
-
-            // Check for the author command.
-            if (strcmp(msg, AUTHOR_COMMAND) == 0) {
-                    sprintf(result_string, "[%s:SUCCESS]\n", msg);
-                    cse4589_print_and_log(result_string);
-                    sprintf(result_string, "AUTHOR:I, pwalveka, have read and understood the course academic integrity policy.\n");
-                    cse4589_print_and_log(result_string);
-                    sprintf(result_string, "[%s:END]\n", msg);
-                    cse4589_print_and_log(result_string);
-
-            } else {
-                int server;
-	            server = connect_to_host(argv[1], atoi(argv[2]));
-
-                printf("I got: %s(size:%d chars)", msg, strlen(msg));
-
-                printf("\nSENDing it to the remote server ... ");
-                if(send(server, msg, strlen(msg), 0) == strlen(msg))
-                    printf("Done!\n");
-                fflush(stdout);
-
-                /* Initialize buffer to receieve response */
-                char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
-                memset(buffer, '\0', BUFFER_SIZE);
-
-                if(recv(server, buffer, BUFFER_SIZE, 0) >= 0){
-                    printf("Server responded: %s", buffer);
-                    fflush(stdout);
-                }
-            }    
-        }
-        
+        int result = client_starter_function(argc, argv);
+        if(!result) {
+            // Server function succesful.
+            return 0;
+        } else {
+            // Server function failed!
+            exit(-1);
+        }        
     }
 
     // Server mode.
     else if (strcmp(type_of_app, "s") == 0)
     {
-    	cout << "It is a server \n";
+    	//cout << "It is a server \n";
+        int result = server_starter_function(argc, argv);
+        if(!result) {
+            // Server function succesful.
+            return 0;
+        } else {
+            // Server function failed!
+            exit(-1);
+        }
+
     }
 
     // Not a valid type choice.
     else
     {
     	cout << "Not a valid input for type of application \n";
+        return 0;
     }
 
     // Exit successful.	
-	return 0;
+	//return 0;
 }

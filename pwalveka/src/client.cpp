@@ -28,9 +28,12 @@
 #include <arpa/inet.h>
 
 #include "../include/client.h"
+#include "../include/logger.h"
+#include "../include/global.h"
+#include "../include/helper.h"
 
 #define TRUE 1
-#define MSG_SIZE 256
+#define cmd_SIZE 256
 #define BUFFER_SIZE 256
 
  /**
@@ -43,37 +46,59 @@
 int client_starter_function(int argc, char **argv)
 {
 	if(argc != 3) {
-		printf("Usage:%s [ip] [port]\n", argv[0]);
+		printf("Usage:%s [mode] [port]\n", argv[0]);
 		exit(-1);
 	}
 
-	int server;
-	server = connect_to_host(argv[1], atoi(argv[2]));
+	/*Init. Logger*/
+	cse4589_init_log(argv[2]);
+        
+	// The result string that will be printed and logged.
+	char result_string[1024];
 
 	while(TRUE){
-		printf("\n[PA1-Client@CSE489/589]$ ");
-		fflush(stdout);
-
-		char *msg = (char*) malloc(sizeof(char)*MSG_SIZE);
-    	memset(msg, '\0', MSG_SIZE);
-		if(fgets(msg, MSG_SIZE-1, stdin) == NULL) //Mind the newline character that will be written to msg
-			exit(-1);
-
-		printf("I got: %s(size:%d chars)", msg, strlen(msg));
-
-		printf("\nSENDing it to the remote server ... ");
-		if(send(server, msg, strlen(msg), 0) == strlen(msg))
-			printf("Done!\n");
-		fflush(stdout);
-
-		/* Initialize buffer to receieve response */
-        char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
-        memset(buffer, '\0', BUFFER_SIZE);
-
-		if(recv(server, buffer, BUFFER_SIZE, 0) >= 0){
-			printf("Server responded: %s", buffer);
+			printf("\n[PA1-Client@CSE489/589]$ ");
 			fflush(stdout);
-		}
+
+			char *cmd = (char*) malloc(sizeof(char)*cmd_SIZE);
+			memset(cmd, '\0', cmd_SIZE);
+			if(fgets(cmd, cmd_SIZE-1, stdin) == NULL) //Mind the newline character that will be written to cmd
+					exit(-1);
+
+			// Get rid of the newline character if there is one.
+			int len = strlen(cmd); //where buff is your char array fgets is using
+			if(cmd[len-1]=='\n')
+					cmd[len-1]='\0';
+
+			// Check for the author command.
+			if (strcmp(cmd, AUTHOR_COMMAND) == 0) {
+							sprintf(result_string, "[%s:SUCCESS]\n", cmd);
+							cse4589_print_and_log(result_string);
+							sprintf(result_string, author_command());
+							cse4589_print_and_log(result_string);
+							sprintf(result_string, "[%s:END]\n", cmd);
+							cse4589_print_and_log(result_string);
+
+			} else {
+				int server;
+				server = connect_to_host(argv[1], atoi(argv[2]));
+
+				printf("I got: %s(size:%d chars)", cmd, strlen(cmd));
+
+				printf("\nSENDing it to the remote server ... ");
+				if(send(server, cmd, strlen(cmd), 0) == strlen(cmd))
+						printf("Done!\n");
+				fflush(stdout);
+
+				/* Initialize buffer to receieve response */
+				char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+				memset(buffer, '\0', BUFFER_SIZE);
+
+				if(recv(server, buffer, BUFFER_SIZE, 0) >= 0){
+						printf("Server responded: %s", buffer);
+						fflush(stdout);
+				}
+			}    
 	}
 }
 
