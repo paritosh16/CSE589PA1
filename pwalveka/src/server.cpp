@@ -22,12 +22,18 @@
  * Uses the select() API to multiplex between network I/O and STDIN.
  */
 #include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <strings.h>
 #include <string.h>
 #include <unistd.h>
+
+#include "../include/server.h"
+#include "../include/logger.h"
+#include "../include/global.h"
+#include "../include/helper.h"
 
 #define BACKLOG 5
 #define STDIN 0
@@ -36,23 +42,34 @@
 #define BUFFER_SIZE 256
 
 /**
- * main function
+ * server_starter function
  *
  * @param  argc Number of arguments
  * @param  argv The argument list
  * @return 0 EXIT_SUCCESS
  */
-int main(int argc, char **argv)
+
+int server_starter_function(int argc, char **argv)
 {
-  if(argc != 2) {
-    printf("Usage:%s [port]\n", argv[0]);
+  if(argc != 3) {
+    printf("Usage:%s [mode] [port]\n", argv[0]);
     exit(-1);
   }
+
+  /*Init. Logger*/
+	cse4589_init_log(argv[2]);
 
   int port, server_socket, head_socket, selret, sock_index, fdaccept=0;
   struct sockaddr_in server_addr, client_addr;
   fd_set master_list, watch_list;
   socklen_t caddr_len;
+  char device_hostname[100];
+  char device_ip_address[100];
+
+   /* Function that populates the IP address of the machine*/
+  int res = ip_command(device_hostname,device_ip_address);
+  printf("The Hostname of the device is : %s\n", device_hostname);
+  printf("The IP address of the device is: %s\n", device_ip_address);
 
   /* Socket */
   server_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -110,14 +127,61 @@ int main(int argc, char **argv)
           if (sock_index == STDIN){
             char *cmd = (char*) malloc(sizeof(char)*CMD_SIZE);
 
+          	// The result string that will be printed and logged.
+	          char result_string[1024];
+
             memset(cmd, '\0', CMD_SIZE);
             if(fgets(cmd, CMD_SIZE-1, stdin) == NULL) //Mind the newline character that will be written to cmd
               exit(-1);
 
-            printf("\nI got: %s\n", cmd);
+            // Get rid of the newline character if there is one.
+            int len = strlen(cmd); //where buff is your char array fgets is using
+            if(cmd[len-1]=='\n')
+                cmd[len-1]='\0';
+
+            //printf("\nI got: %s\n", cmd);
 
             //Process PA1 commands here ...
-
+            // Check for the author command.
+            if (strcmp(cmd, AUTHOR_COMMAND) == 0) {
+              char author_command_result[1024];
+				      int status = author_command(author_command_result);
+              if (!status) {
+                // Successful execution. 
+                sprintf(result_string, "[%s:SUCCESS]\n", cmd);
+                cse4589_print_and_log(result_string);
+                cse4589_print_and_log(author_command_result);
+                sprintf(result_string, "\n[%s:END]\n", cmd);
+                cse4589_print_and_log(result_string);
+              } else {
+                // Error has occured.
+                sprintf(result_string, "[%s:ERROR]\n", cmd);
+                cse4589_print_and_log(result_string);
+                sprintf(result_string, "[%s:END]\n", cmd);
+                cse4589_print_and_log(result_string);
+              }
+            // Check for the IP command.
+            } else if (strcmp(cmd, IP_COMMAND) == 0) {
+              char device_hostname[100];
+              char device_ip_address[100];
+              int status = ip_command(device_hostname, device_ip_address);
+              if(!status) {
+                // Successful execution. 
+                sprintf(result_string, "[%s:SUCCESS]\nIP:", cmd);
+                cse4589_print_and_log(result_string);
+                cse4589_print_and_log(device_ip_address);
+                sprintf(result_string, "\n[%s:END]\n", cmd);
+                cse4589_print_and_log(result_string);
+              } else {
+                // Error has occured.
+                sprintf(result_string, "[%s:ERROR]\n", cmd);
+                cse4589_print_and_log(result_string);
+                sprintf(result_string, "[%s:END]\n", cmd);
+                cse4589_print_and_log(result_string);
+              }
+            } else {
+              
+            }
             free(cmd);
           }
           /* Check if new client is requesting connection */
@@ -162,6 +226,5 @@ int main(int argc, char **argv)
       }
     }
   }
-
   return 0;
 }
