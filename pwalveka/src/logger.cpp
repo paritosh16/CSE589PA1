@@ -26,7 +26,7 @@
 #include <stdarg.h>
 #include <time.h>
 #include <unistd.h>
-#include <mach-o/dyld.h>
+//#include <mach-o/dyld.h>
 
 #include "../include/global.h"
 #include "../include/logger.h"
@@ -50,8 +50,8 @@ void cse4589_init_log(char* port)
 	/* Get executable's path*/
 	char* exec_path = (char*) malloc(PATH_LEN*sizeof(char));
 	bzero(exec_path, PATH_LEN);
-  	//if (readlink("/proc/self/exe", exec_path, PATH_LEN) == -1) {
-		if (_NSGetExecutablePath(exec_path, &path_len) == -1) {
+  	if (readlink("/proc/self/exe", exec_path, PATH_LEN) == -1) {
+		//if (_NSGetExecutablePath(exec_path, &path_len) == -1) {
     	printf("Oops! Failed to get executable path. Contact the course staff!\n" );
 		exit(1);
 	}
