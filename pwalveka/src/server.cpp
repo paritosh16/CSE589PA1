@@ -29,6 +29,8 @@
 #include <strings.h>
 #include <string.h>
 #include <unistd.h>
+#include <netdb.h>
+#include <arpa/inet.h>
 
 #include "../include/server.h"
 
@@ -38,8 +40,10 @@
 #define CMD_SIZE 100
 #define BUFFER_SIZE 256
 
+
+int populate_ip_address(char *device_hostname,char *device_ip_address);
 /**
- * main function
+ * server_starter function
  *
  * @param  argc Number of arguments
  * @param  argv The argument list
@@ -56,6 +60,13 @@ int server_starter_function(int argc, char **argv)
   struct sockaddr_in server_addr, client_addr;
   fd_set master_list, watch_list;
   socklen_t caddr_len;
+  char device_hostname[100];
+  char device_ip_address[100];
+
+   /* Function that populates the IP address of the machine*/
+  int res = populate_ip_address(device_hostname,device_ip_address);
+  printf("The Hostname of the device is : %s\n", device_hostname);
+  printf("The IP address of the device is: %s\n", device_ip_address);
 
   /* Socket */
   server_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -168,3 +179,30 @@ int server_starter_function(int argc, char **argv)
 
   return 0;
 }
+
+
+/* Function that gets the hostname of the device first
+    Then it resolves the hostname to corresponding IP Address*/
+int populate_ip_address(char *device_hostname,char *device_ip_address)
+{
+    struct hostent *host_info;
+    struct in_addr **addr_list;
+    int i;
+   
+    int result = gethostname(device_hostname,2048);
+
+    host_info = gethostbyname(device_hostname);
+
+    addr_list = (struct in_addr **) host_info->h_addr_list;
+
+    for(i = 0; addr_list[i] != NULL; i++)
+    {
+        //Return the first one;
+        strcpy(device_ip_address , inet_ntoa(*addr_list[i]) );
+        return 0;
+    }
+
+    return result;
+}
+
+
