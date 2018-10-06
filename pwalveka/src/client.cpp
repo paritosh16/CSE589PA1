@@ -54,7 +54,7 @@ int client_starter_function(int argc, char **argv)
 	cse4589_init_log(argv[2]);
         
 	// The result string that will be printed and logged.
-	char result_string[1024];
+	char result_string[100];
 
 	while(TRUE){
 			printf("\n[PA1-Client@CSE489/589]$ ");
@@ -72,13 +72,41 @@ int client_starter_function(int argc, char **argv)
 
 			// Check for the author command.
 			if (strcmp(cmd, AUTHOR_COMMAND) == 0) {
-							sprintf(result_string, "[%s:SUCCESS]\n", cmd);
-							cse4589_print_and_log(result_string);
-							sprintf(result_string, author_command());
-							cse4589_print_and_log(result_string);
-							sprintf(result_string, "[%s:END]\n", cmd);
-							cse4589_print_and_log(result_string);
-
+				char author_command_result[1024];
+				int status = author_command(author_command_result);
+				if (!status) {
+					// Successful execution. 
+					sprintf(result_string, "[%s:SUCCESS]\n", cmd);
+					cse4589_print_and_log(result_string);
+					cse4589_print_and_log(author_command_result);
+					sprintf(result_string, "\n[%s:END]\n", cmd);
+					cse4589_print_and_log(result_string);
+				} else {
+					// Error has occured.
+					sprintf(result_string, "[%s:ERROR]\n", cmd);
+					cse4589_print_and_log(result_string);
+					sprintf(result_string, "[%s:END]\n", cmd);
+					cse4589_print_and_log(result_string);
+				}
+			// Check for the IP command.
+			} else if (strcmp(cmd, IP_COMMAND) == 0) {
+				char device_hostname[100];
+  			char device_ip_address[100];
+				int status = ip_command(device_hostname, device_ip_address);
+				if(!status) {
+					// Successful execution. 
+					sprintf(result_string, "[%s:SUCCESS]\nIP:", cmd);
+					cse4589_print_and_log(result_string);
+					cse4589_print_and_log(device_ip_address);
+					sprintf(result_string, "\n[%s:END]\n", cmd);
+					cse4589_print_and_log(result_string);
+				} else {
+					// Error has occured.
+					sprintf(result_string, "[%s:ERROR]\n", cmd);
+					cse4589_print_and_log(result_string);
+					sprintf(result_string, "[%s:END]\n", cmd);
+					cse4589_print_and_log(result_string);
+				}
 			} else {
 				int server;
 				server = connect_to_host(argv[1], atoi(argv[2]));

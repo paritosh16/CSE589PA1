@@ -29,8 +29,6 @@
 #include <strings.h>
 #include <string.h>
 #include <unistd.h>
-#include <netdb.h>
-#include <arpa/inet.h>
 
 #include "../include/server.h"
 #include "../include/logger.h"
@@ -43,8 +41,6 @@
 #define CMD_SIZE 100
 #define BUFFER_SIZE 256
 
-
-int populate_ip_address(char *device_hostname,char *device_ip_address);
 /**
  * server_starter function
  *
@@ -71,7 +67,7 @@ int server_starter_function(int argc, char **argv)
   char device_ip_address[100];
 
    /* Function that populates the IP address of the machine*/
-  int res = populate_ip_address(device_hostname,device_ip_address);
+  int res = ip_command(device_hostname,device_ip_address);
   printf("The Hostname of the device is : %s\n", device_hostname);
   printf("The IP address of the device is: %s\n", device_ip_address);
 
@@ -148,13 +144,41 @@ int server_starter_function(int argc, char **argv)
             //Process PA1 commands here ...
             // Check for the author command.
             if (strcmp(cmd, AUTHOR_COMMAND) == 0) {
-                    sprintf(result_string, "[%s:SUCCESS]\n", cmd);
-                    cse4589_print_and_log(result_string);
-                    sprintf(result_string, author_command());
-                    cse4589_print_and_log(result_string);
-                    sprintf(result_string, "[%s:END]\n", cmd);
-                    cse4589_print_and_log(result_string);
-
+              char author_command_result[1024];
+				      int status = author_command(author_command_result);
+              if (!status) {
+                // Successful execution. 
+                sprintf(result_string, "[%s:SUCCESS]\n", cmd);
+                cse4589_print_and_log(result_string);
+                cse4589_print_and_log(author_command_result);
+                sprintf(result_string, "\n[%s:END]\n", cmd);
+                cse4589_print_and_log(result_string);
+              } else {
+                // Error has occured.
+                sprintf(result_string, "[%s:ERROR]\n", cmd);
+                cse4589_print_and_log(result_string);
+                sprintf(result_string, "[%s:END]\n", cmd);
+                cse4589_print_and_log(result_string);
+              }
+            // Check for the IP command.
+            } else if (strcmp(cmd, IP_COMMAND) == 0) {
+              char device_hostname[100];
+              char device_ip_address[100];
+              int status = ip_command(device_hostname, device_ip_address);
+              if(!status) {
+                // Successful execution. 
+                sprintf(result_string, "[%s:SUCCESS]\nIP:", cmd);
+                cse4589_print_and_log(result_string);
+                cse4589_print_and_log(device_ip_address);
+                sprintf(result_string, "\n[%s:END]\n", cmd);
+                cse4589_print_and_log(result_string);
+              } else {
+                // Error has occured.
+                sprintf(result_string, "[%s:ERROR]\n", cmd);
+                cse4589_print_and_log(result_string);
+                sprintf(result_string, "[%s:END]\n", cmd);
+                cse4589_print_and_log(result_string);
+              }
             } else {
               
             }
@@ -202,33 +226,5 @@ int server_starter_function(int argc, char **argv)
       }
     }
   }
-
   return 0;
 }
-
-
-/* Function that gets the hostname of the device first
-    Then it resolves the hostname to corresponding IP Address*/
-int populate_ip_address(char *device_hostname,char *device_ip_address)
-{
-    struct hostent *host_info;
-    struct in_addr **addr_list;
-    int i;
-   
-    int result = gethostname(device_hostname,2048);
-
-    host_info = gethostbyname(device_hostname);
-
-    addr_list = (struct in_addr **) host_info->h_addr_list;
-
-    for(i = 0; addr_list[i] != NULL; i++)
-    {
-        //Return the first one;
-        strcpy(device_ip_address , inet_ntoa(*addr_list[i]) );
-        return 0;
-    }
-
-    return result;
-}
-
-
