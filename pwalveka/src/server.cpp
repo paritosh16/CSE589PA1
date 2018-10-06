@@ -56,6 +56,9 @@ int server_starter_function(int argc, char **argv)
     exit(-1);
   }
 
+	// Grab the port number that the client will listen for incoming connections on.
+	char* port_number = argv[2];
+
   /*Init. Logger*/
 	cse4589_init_log(argv[2]);
 
@@ -179,8 +182,14 @@ int server_starter_function(int argc, char **argv)
                 sprintf(result_string, "[%s:END]\n", cmd);
                 cse4589_print_and_log(result_string);
               }
+            // Check for the PORT commad.
+            } else if (strcmp(cmd, PORT_COMMAND) == 0) {
+              sprintf(result_string, "[%s:SUCCESS]\nPORT:", cmd);
+              cse4589_print_and_log(result_string);
+              cse4589_print_and_log(port_number);
+              sprintf(result_string, "\n[%s:END]\n", cmd);
+              cse4589_print_and_log(result_string);
             } else {
-              
             }
             free(cmd);
           }
