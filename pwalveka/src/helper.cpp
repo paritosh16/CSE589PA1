@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <netdb.h>
+#include <string>
 #include <arpa/inet.h>
 #include <string.h>
 #include <unistd.h>
+#include <vector>
 
 /* Function that returns the string with the UBIT name agreeing to the academic integrity. Project will not be graded without the AUTHOR command. */
 int author_command(char *result_string) {
@@ -27,4 +29,14 @@ int ip_command(char *device_hostname, char *device_ip_address)
         return 0;
     }
     return result;
+}
+
+/* Function to tokenize the command by splitting it over spaces.*/
+int tokenize_command(std::vector<char*>* tokenized_command, char* cmd){
+  char *token = strtok(cmd, " ");
+  while(token) {
+    tokenized_command->push_back(token);
+    token = strtok(NULL, " ");
+  }
+  return 0;
 }

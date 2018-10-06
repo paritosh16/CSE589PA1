@@ -21,11 +21,15 @@
  * This file contains the client.
  */
 #include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <strings.h>
 #include <string.h>
+#include <string>
 #include <arpa/inet.h>
+#include <vector>
+
 
 #include "../include/client.h"
 #include "../include/logger.h"
@@ -49,6 +53,9 @@ int client_starter_function(int argc, char **argv)
 		printf("Usage:%s [mode] [port]\n", argv[0]);
 		exit(-1);
 	}
+	
+	// The array that holds the tokenized client command.
+	std::vector<char*> tokenized_command;
 
 	// Grab the port number that the client will listen for incoming connections on.
 	char* port_number = argv[2];
@@ -71,10 +78,20 @@ int client_starter_function(int argc, char **argv)
 			// Get rid of the newline character if there is one.
 			int len = strlen(cmd); //where buff is your char array fgets is using
 			if(cmd[len-1]=='\n')
-					cmd[len-1]='\0';
+					cmd[len-1]= NULL;
+			
+			// Tokenize the command.
+			int tokenize_status = tokenize_command(&tokenized_command, cmd);
+			if(tokenize_status) {
+				// Some error occured. 
+				exit(1);
+			}
+
+			// Get the command from the vector.
+			const char* command = tokenized_command[0];
 
 			// Check for the author command.
-			if (strcmp(cmd, AUTHOR_COMMAND) == 0) {
+			if (strcmp(command, AUTHOR_COMMAND) == 0) {
 				char author_command_result[1024];
 				int status = author_command(author_command_result);
 				if (!status) {
@@ -92,7 +109,7 @@ int client_starter_function(int argc, char **argv)
 					cse4589_print_and_log(result_string);
 				}
 			// Check for the IP command.
-			} else if (strcmp(cmd, IP_COMMAND) == 0) {
+			} else if (strcmp(command, IP_COMMAND) == 0) {
 				char device_hostname[100];
   			char device_ip_address[100];
 				int status = ip_command(device_hostname, device_ip_address);
@@ -111,15 +128,15 @@ int client_starter_function(int argc, char **argv)
 					cse4589_print_and_log(result_string);
 				}
 			// Check for the PORT command.
-			} else if (strcmp(cmd, PORT_COMMAND) == 0) {
+			} else if (strcmp(command, PORT_COMMAND) == 0) {
 				sprintf(result_string, "[%s:SUCCESS]\nPORT:", cmd);
 				cse4589_print_and_log(result_string);
 				cse4589_print_and_log(port_number);
 				sprintf(result_string, "\n[%s:END]\n", cmd);
 				cse4589_print_and_log(result_string);
-			} else {
+			} else if(strcmp(command, LOGIN_COMMAND)) {
 				int server;
-				server = connect_to_host(argv[1], atoi(argv[2]));
+				server = connect_to_host(tokenized_command[1], atoi(tokenized_command[2]));
 
 				printf("I got: %s(size:%d chars)", cmd, strlen(cmd));
 
@@ -136,7 +153,8 @@ int client_starter_function(int argc, char **argv)
 						printf("Server responded: %s", buffer);
 						fflush(stdout);
 				}
-			}    
+			} else {
+			}   
 	}
 }
 

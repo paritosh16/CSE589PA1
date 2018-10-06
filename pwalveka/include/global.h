@@ -6,5 +6,6 @@
 #define AUTHOR_COMMAND "AUTHOR"
 #define IP_COMMAND "IP"
 #define PORT_COMMAND "PORT"
+#define LOGIN_COMMAND "LOGIN"
 
 #endif
