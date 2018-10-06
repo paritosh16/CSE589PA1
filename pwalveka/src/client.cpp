@@ -53,9 +53,6 @@ int client_starter_function(int argc, char **argv)
 		printf("Usage:%s [mode] [port]\n", argv[0]);
 		exit(-1);
 	}
-	
-	// The array that holds the tokenized client command.
-	std::vector<char*> tokenized_command;
 
 	// Grab the port number that the client will listen for incoming connections on.
 	char* port_number = argv[2];
@@ -80,6 +77,9 @@ int client_starter_function(int argc, char **argv)
 			if(cmd[len-1]=='\n')
 					cmd[len-1]= NULL;
 			
+			// The array that holds the tokenized client command.
+			std::vector<char*> tokenized_command;
+							
 			// Tokenize the command.
 			int tokenize_status = tokenize_command(&tokenized_command, cmd);
 			if(tokenize_status) {
@@ -134,7 +134,7 @@ int client_starter_function(int argc, char **argv)
 				cse4589_print_and_log(port_number);
 				sprintf(result_string, "\n[%s:END]\n", cmd);
 				cse4589_print_and_log(result_string);
-			} else if(strcmp(command, LOGIN_COMMAND)) {
+			} else if(strcmp(command, LOGIN_COMMAND) == 0) {
 				int server;
 				server = connect_to_host(tokenized_command[1], atoi(tokenized_command[2]));
 
