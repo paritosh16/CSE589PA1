@@ -55,6 +55,7 @@ int server_starter_function(int argc, char **argv)
     printf("Usage:%s [mode] [port]\n", argv[0]);
     exit(-1);
   }
+  printf("Port is : %s",argv[2]);
 
 	// Grab the port number that the client will listen for incoming connections on.
 	char* port_number = argv[2];
@@ -80,7 +81,7 @@ int server_starter_function(int argc, char **argv)
     perror("Cannot create socket");
 
   /* Fill up sockaddr_in struct */
-  port = atoi(argv[1]);
+  port = atoi(argv[2]);
   bzero(&server_addr, sizeof(server_addr));
 
   server_addr.sin_family = AF_INET;
