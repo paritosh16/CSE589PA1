@@ -138,6 +138,10 @@ int client_starter_function(int argc, char **argv)
 				int server;
 				server = connect_to_host(tokenized_command[1], atoi(tokenized_command[2]));
 
+				printf("%d", server);
+				printf("%s", tokenized_command[1]);
+				printf("%s", tokenized_command[2]);
+				
 				printf("I got: %s(size:%d chars)", cmd, strlen(cmd));
 
 				printf("\nSENDing it to the remote server ... ");
