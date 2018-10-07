@@ -90,8 +90,8 @@ int client_starter_function(int argc, char **argv)
 			// Get the command from the vector.
 			const char* command = tokenized_command[0];
 
-			// Check for the author command.
 			if (strcmp(command, AUTHOR_COMMAND) == 0) {
+			// Check for the author command.
 				char author_command_result[1024];
 				int status = author_command(author_command_result);
 				if (!status) {
@@ -108,8 +108,8 @@ int client_starter_function(int argc, char **argv)
 					sprintf(result_string, "[%s:END]\n", cmd);
 					cse4589_print_and_log(result_string);
 				}
-			// Check for the IP command.
 			} else if (strcmp(command, IP_COMMAND) == 0) {
+			// Check for the IP command.		
 				char device_hostname[100];
   			char device_ip_address[100];
 				int status = ip_command(device_hostname, device_ip_address);
@@ -127,14 +127,15 @@ int client_starter_function(int argc, char **argv)
 					sprintf(result_string, "[%s:END]\n", cmd);
 					cse4589_print_and_log(result_string);
 				}
-			// Check for the PORT command.
 			} else if (strcmp(command, PORT_COMMAND) == 0) {
+			// Check for the PORT command.				
 				sprintf(result_string, "[%s:SUCCESS]\nPORT:", cmd);
 				cse4589_print_and_log(result_string);
 				cse4589_print_and_log(port_number);
 				sprintf(result_string, "\n[%s:END]\n", cmd);
 				cse4589_print_and_log(result_string);
 			} else if(strcmp(command, LOGIN_COMMAND) == 0) {
+			// Check for the LOGIN command. 
 				int server;
 				server = connect_to_host(tokenized_command[1], atoi(tokenized_command[2]));
 
@@ -157,8 +158,27 @@ int client_starter_function(int argc, char **argv)
 						printf("Server responded: %s", buffer);
 						fflush(stdout);
 				}
+			} else if(strcmp(command, REFRESH_COMMAND)){
+			// Check for the REFRESH command.
+			} else if(strcmp(command, SEND_COMMAND)){
+			// Check for the SEND command.
+			} else if(strcmp(command, BROADCAST_COMMAND)){
+			// Check for the BROADCAST command.
+			} else if(strcmp(command, BLOCK_COMMAND)){
+			// Check for the BLOCK command.
+			} else if(strcmp(command, UNBLOCK_COMMAND)){
+			// Check for the UNBLOCK command.
+			} else if(strcmp(command, BLOCKED_COMMAND)){
+			// Check for the BLOCKED command.
+			} else if(strcmp(command, LOGOUT_COMMAND)){
+			// Check for the LOGOUT command.
+			} else if(strcmp(command, EXIT_COMMAND)){
+			// Check for the EXIT command.
+			} else if(strcmp(command, STATISTICS_COMMAND)){
+			// Check for the STATISTICS command.
 			} else {
-			}   
+			// TODO: This is the wrong command. Need to check with the requorements to see if any exception has to ber raised for the auto grader.
+			}
 	}
 }
 
