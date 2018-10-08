@@ -3,7 +3,7 @@
 #include <string>
 #include <arpa/inet.h>
 #include <string.h>
-#include <string>
+#include <stdlib.h>
 #include <unistd.h>
 #include <vector>
 #include <sstream>
@@ -97,4 +97,16 @@ std::string ToString(int value) {
   std::stringstream stream;
   stream << value;
   return stream.str();
+}
+
+/* Function to print the client_data vector.*/
+int print_client_data_vector(std::vector<client_data>* client_details) {
+  int size = (*client_details).size();
+  for(int i=0; i < size; i++) {
+    printf("Client No %d:\n", i);
+    printf("Hostname:%s\n", (*client_details)[i].client_name);
+    printf("Port:%d\n", (*client_details)[i].client_port);
+    printf("Status:%d\n", (*client_details)[i].status);
+  }
+  return 0;
 }

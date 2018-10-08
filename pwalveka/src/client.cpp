@@ -162,7 +162,8 @@ int client_starter_function(int argc, char **argv)
 
 				if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
 					int deserialize_status = deserialize_client_data(&all_clients, buffer);
-					printf("Server responded: %s\n", all_clients[0].client_name);
+					printf("Server responded:\n");
+					print_client_data_vector(&all_clients);
 					fflush(stdout);
 				}
 			} else if(strcmp(command, REFRESH_COMMAND) == 0){

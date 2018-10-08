@@ -24,5 +24,6 @@ int tokenize_command(std::vector<char*>* tokenized_command, char* cmd);
 int serialize_client_data(std::vector<client_data>* client_data, char* serialized_data);
 int deserialize_client_data(std::vector<client_data>* client_data, char* serialized_data);
 std::string ToString(int value);
+int print_client_data_vector(std::vector<client_data>* client_details);
 
 #endif
