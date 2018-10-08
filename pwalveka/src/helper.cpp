@@ -3,8 +3,10 @@
 #include <string>
 #include <arpa/inet.h>
 #include <string.h>
+#include <string>
 #include <unistd.h>
 #include <vector>
+#include <sstream>
 #include "./helper.h"
 
 /* Function that returns the string with the UBIT name agreeing to the academic integrity. Project will not be graded without the AUTHOR command. */
@@ -54,14 +56,13 @@ int serialize_client_data(std::vector<client_data>* client_data, char* serialize
     // Add a delimeter.
     temporary_string.append(std::string(","));
     // Add the client port.
-    temporary_string.append(std::to_string((*client_data)[i].client_port));
+    temporary_string.append(ToString((*client_data)[i].client_port));
     // Add a delimieter.
     temporary_string.append(std::string(","));
     // Add the client status.
-    temporary_string.append(std::to_string((*client_data)[i].status));
+    temporary_string.append(ToString((*client_data)[i].status));
     // Add the end of record delimieter.
     temporary_string.append(std::string(";"));
-
   }
   strcpy(serialized_data, temporary_string.c_str());
   return 0;
@@ -89,4 +90,11 @@ int deserialize_client_data(std::vector<client_data>* client_data, char* seriali
   }
   printf("Deserialization done.");
   return 0;
+}
+
+/* Convert integer to std::string because CSE server doesn not have std:string.to_string*/
+std::string ToString(int value) {
+  std::stringstream stream;
+  stream << value;
+  return stream.str();
 }
