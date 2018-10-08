@@ -35,4 +35,4 @@
 .vscode/**
 
 # Logger file for MacOSX
-pwalveka/src/logger.cpp
+#pwalveka/src/logger.cpp

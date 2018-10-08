@@ -50,9 +50,13 @@ int serialize_client_data(std::vector<client_data>* client_data, char* serialize
   std::string temporary_string = std::string("");
   for(int i = 0; i < client_data_size; i++ ){
     // Add client name.
-    std::string retrieve_char_array = std::string((*client_data)[i].client_name);
-    temporary_string.append(retrieve_char_array);
-    printf("%s",(*client_data)[i].client_name);
+    std::string retrieve_host_name = std::string((*client_data)[i].client_name);
+    temporary_string.append(retrieve_host_name);
+    // Add a delimeter.
+    temporary_string.append(std::string(","));
+    // Add client ip address.
+    std::string retrieve_ip_address = std::string((*client_data)[i].client_ip_address);
+    temporary_string.append(retrieve_ip_address);
     // Add a delimeter.
     temporary_string.append(std::string(","));
     // Add the client port.
@@ -83,6 +87,8 @@ int deserialize_client_data(std::vector<client_data>* client_data, char* seriali
     char* item = strtok(client_details, ",");
     strcpy(temp_data.client_name,item);
     item = strtok(NULL, ",");
+    strcpy(temp_data.client_ip_address, item);
+    item = strtok(NULL, ",");
     temp_data.client_port = atoi(item);
     item = strtok(NULL, ",");
     temp_data.status = atoi(item);
@@ -105,6 +111,7 @@ int print_client_data_vector(std::vector<client_data>* client_details) {
   for(int i=0; i < size; i++) {
     printf("Client No %d:\n", i);
     printf("Hostname:%s\n", (*client_details)[i].client_name);
+    printf("IP Address:%s\n", (*client_details)[i].client_ip_address);
     printf("Port:%d\n", (*client_details)[i].client_port);
     printf("Status:%d\n", (*client_details)[i].status);
   }
