@@ -29,6 +29,7 @@
 #include <string>
 #include <arpa/inet.h>
 #include <vector>
+#include <algorithm>
 
 
 #include "../include/client.h"
