@@ -57,6 +57,9 @@ int client_starter_function(int argc, char **argv)
 	// Grab the port number that the client will listen for incoming connections on.
 	char* port_number = argv[2];
 
+	// Maintain the list of all the clients.
+	std::vector<client_data> all_clients;
+
 	/*Init. Logger*/
 	cse4589_init_log(argv[2]);
         
@@ -137,15 +140,18 @@ int client_starter_function(int argc, char **argv)
 			} else if(strcmp(command, LOGIN_COMMAND) == 0) {
 			// Check for the LOGIN command. 
 				int server;
-				server = connect_to_host(tokenized_command[1], atoi(tokenized_command[2]));
+				char* server_ip = tokenized_command[1];
+				int server_port = atoi(tokenized_command[2]);
 
-				printf("%d", server);
-				printf("%s", tokenized_command[1]);
-				printf("%s", tokenized_command[2]);
+				server = connect_to_host(server_ip, server_port);
+
+				printf("Server Object:%d\n", server);
+				printf("Server IP:%s\n", server_ip);
+				printf("Server Port:%d\n", server_port);
 				
-				printf("I got: %s(size:%d chars)", cmd, strlen(cmd));
+				printf("I got: %s(size:%d chars)\n", cmd, strlen(cmd));
 
-				printf("\nSENDing it to the remote server ... ");
+				printf("\nSENDing it to the remote server ... \n");
 				if(send(server, cmd, strlen(cmd), 0) == strlen(cmd))
 						printf("Done!\n");
 				fflush(stdout);
@@ -154,27 +160,30 @@ int client_starter_function(int argc, char **argv)
 				char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
 				memset(buffer, '\0', BUFFER_SIZE);
 
-				if(recv(server, buffer, BUFFER_SIZE, 0) >= 0){
-						printf("Server responded: %s", buffer);
-						fflush(stdout);
+				if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
+					int deserialize_status = deserialize_client_data(&all_clients, buffer);
+					printf("Server responded: %s\n", all_clients[0].client_name);
+					fflush(stdout);
 				}
-			} else if(strcmp(command, REFRESH_COMMAND)){
+			} else if(strcmp(command, REFRESH_COMMAND) == 0){
 			// Check for the REFRESH command.
-			} else if(strcmp(command, SEND_COMMAND)){
+			} else if(strcmp(command, SEND_COMMAND) == 0){
 			// Check for the SEND command.
-			} else if(strcmp(command, BROADCAST_COMMAND)){
+			} else if(strcmp(command, LIST_COMMAND) == 0) {
+			// Check for the LIST command.
+			} else if(strcmp(command, BROADCAST_COMMAND) == 0){
 			// Check for the BROADCAST command.
-			} else if(strcmp(command, BLOCK_COMMAND)){
+			} else if(strcmp(command, BLOCK_COMMAND) == 0){
 			// Check for the BLOCK command.
-			} else if(strcmp(command, UNBLOCK_COMMAND)){
+			} else if(strcmp(command, UNBLOCK_COMMAND) == 0){
 			// Check for the UNBLOCK command.
-			} else if(strcmp(command, BLOCKED_COMMAND)){
+			} else if(strcmp(command, BLOCKED_COMMAND) == 0){
 			// Check for the BLOCKED command.
-			} else if(strcmp(command, LOGOUT_COMMAND)){
+			} else if(strcmp(command, LOGOUT_COMMAND)== 0){
 			// Check for the LOGOUT command.
-			} else if(strcmp(command, EXIT_COMMAND)){
+			} else if(strcmp(command, EXIT_COMMAND) == 0){
 			// Check for the EXIT command.
-			} else if(strcmp(command, STATISTICS_COMMAND)){
+			} else if(strcmp(command, STATISTICS_COMMAND) == 0){
 			// Check for the STATISTICS command.
 			} else {
 			// TODO: This is the wrong command. Need to check with the requorements to see if any exception has to ber raised for the auto grader.
