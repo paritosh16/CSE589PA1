@@ -192,6 +192,10 @@ int client_starter_function(int argc, char **argv)
 
 int connect_to_host(char *server_ip, int server_port, int port_number)
 {
+		printf("This is the port number we got:\n");
+		printf("%d", port_number);
+		printf("%d", htons(port_number));
+		
     int fdsocket, len;
     struct sockaddr_in remote_server_addr;
 
