@@ -162,8 +162,8 @@ int client_starter_function(int argc, char **argv)
 
 				if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
 					int deserialize_status = deserialize_client_data(&all_clients, buffer);
-					printf("Server responded:\n");
-					print_client_data_vector(&all_clients);
+					// printf("Server responded:\n");
+					// print_client_data_vector(&all_clients);
 					fflush(stdout);
 				}
 			} else if(strcmp(command, REFRESH_COMMAND) == 0){
@@ -172,6 +172,8 @@ int client_starter_function(int argc, char **argv)
 			// Check for the SEND command.
 			} else if(strcmp(command, LIST_COMMAND) == 0) {
 			// Check for the LIST command.
+				std::sort(all_clients.begin(), all_clients.end(), comparator_client_data_port);
+				print_client_data_vector(&all_clients);
 			} else if(strcmp(command, BROADCAST_COMMAND) == 0){
 			// Check for the BROADCAST command.
 			} else if(strcmp(command, BLOCK_COMMAND) == 0){
