@@ -52,7 +52,11 @@ int serialize_client_data(std::vector<client_data>* client_data, char* serialize
     // Add client name.
     std::string retrieve_char_array = std::string((*client_data)[i].client_name);
     temporary_string.append(retrieve_char_array);
-    printf("%s",(*client_data)[i].client_name);
+    // Add a delimeter.
+    temporary_string.append(std::string(","));
+    // Add client name.
+    std::string retrieve_char_array2 = std::string((*client_data)[i].client_ip_address);
+    temporary_string.append(retrieve_char_array2);
     // Add a delimeter.
     temporary_string.append(std::string(","));
     // Add the client port.
@@ -82,6 +86,8 @@ int deserialize_client_data(std::vector<client_data>* client_data, char* seriali
     char* client_details = temporary_vector[i];
     char* item = strtok(client_details, ",");
     strcpy(temp_data.client_name,item);
+    item = strtok(NULL, ",");
+    strcpy(temp_data.client_ip_address,item);
     item = strtok(NULL, ",");
     temp_data.client_port = atoi(item);
     item = strtok(NULL, ",");
