@@ -109,11 +109,12 @@ std::string ToString(int value) {
 int print_client_data_vector(std::vector<client_data>* client_details) {
   int size = (*client_details).size();
   for(int i=0; i < size; i++) {
-    printf("Client No %d:\n", i);
-    printf("Hostname:%s\n", (*client_details)[i].client_name);
-    printf("IP Address:%s\n", (*client_details)[i].client_ip_address);
-    printf("Port:%d\n", (*client_details)[i].client_port);
-    printf("Status:%d\n", (*client_details)[i].status);
+    // printf("Client No %d:\n", i);
+    // printf("Hostname:%s\n", (*client_details)[i].client_name);
+    // printf("IP Address:%s\n", (*client_details)[i].client_ip_address);
+    // printf("Port:%d\n", (*client_details)[i].client_port);
+    // printf("Status:%d\n", (*client_details)[i].status);
+    printf("%-5d%-35s%-20s%-8d\n", i+1, (*client_details)[i].client_name, (*client_details)[i].client_ip_address, (*client_details)[i].client_port);
   }
   return 0;
 }
