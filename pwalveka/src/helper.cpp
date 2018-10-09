@@ -120,7 +120,10 @@ int print_client_data_vector(std::vector<client_data>* client_details) {
 }
 
 /* Comparator function to sort the vector based on the port number.*/
-bool comparator_client_data_port(client_data &record_a, client_data &record_b) {
+bool comparator_client_data_port(const client_data &record_a, const client_data &record_b) {
+  if(record_a.client_port == record_b.client_port) {
+    return false;
+  }
   return record_a.client_port < record_b.client_port;
 }
 
