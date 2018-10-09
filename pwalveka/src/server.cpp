@@ -203,7 +203,7 @@ int server_starter_function(int argc, char **argv)
                   char decoded_string[20];
                   char result_string[100];
                   int decode_status;
-                  std::sort(list_of_clients.begin(), list_of_clients.end(), comparator_client_data_port);
+                  //std::sort(list_of_clients.begin(), list_of_clients.end(), comparator_client_data_port);
                   int size = static_cast<int>(list_of_clients.size());
                   for(int i=0; i < size; i++) {
                     int sr_no = i + 1;

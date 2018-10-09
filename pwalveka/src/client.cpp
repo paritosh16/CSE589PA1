@@ -219,7 +219,8 @@ int client_starter_function(int argc, char **argv)
 							fflush(stdout);
 						} else if(strcmp(command, LIST_COMMAND) == 0) {
 						// Check for the LIST command.
-							std::sort(all_clients.begin(), all_clients.end(), comparator_client_data_port);
+							printf("Inside list for no reason");
+							//std::sort(all_clients.begin(), all_clients.end(), comparator_client_data_port);
 							int size = static_cast<int>(all_clients.size());
 							for(int i=0; i < size; i++) {
 								int sr_no = i + 1;
