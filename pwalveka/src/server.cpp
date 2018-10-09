@@ -307,7 +307,7 @@ struct client_data add_new_client(int &fdsocket,struct sockaddr_in& client_addr)
   new_client.sock_decriptor = fdsocket;
   inet_ntop(AF_INET, &(client_addr.sin_addr), new_client.client_ip_address, len);
   // DEBUG BLOG
-  int res = getnameinfo((struct sockaddr *)&client_addr, sizeof(client_addr), new_client.client_ip_address, sizeof(new_client.client_ip_address), NULL, 0, NI_NAMEREQD);
+  int res = getnameinfo((struct sockaddr *)&client_addr, sizeof(client_addr), new_client.client_ip_address, sizeof(new_client.client_ip_address), NULL, 0, NI_NUMERICHOST);
   int hostname_from_addr = getnameinfo((struct sockaddr *)&client_addr, sizeof(client_addr), new_client.client_name, sizeof(new_client.client_name), NULL, 0, NI_NAMEREQD);
   printf("The ip address of the client is : %s\n", new_client.client_ip_address);
   printf("The domain address of the client is : %s\n", new_client.client_name);
