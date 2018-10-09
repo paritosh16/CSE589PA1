@@ -32,6 +32,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <algorithm>
 
 #include "../include/server.h"
 #include "../include/logger.h"
@@ -126,6 +127,8 @@ int server_starter_function(int argc, char **argv)
     if(selret < 0)
       perror("select failed.");
 
+    printf("Select recieved something\n");
+
     /* Check if we have sockets/STDIN to process */
     if(selret > 0){
       /* Loop through socket descriptors to check which ones are ready */
@@ -196,6 +199,19 @@ int server_starter_function(int argc, char **argv)
               cse4589_print_and_log(port_number);
               sprintf(result_string, "\n[%s:END]\n", cmd);
               cse4589_print_and_log(result_string);
+            } else if(strcmp(cmd, STATISTICS_COMMAND) == 0) {
+                  char decoded_string[20];
+                  char result_string[100];
+                  int decode_status;
+                  //std::sort(list_of_clients.begin(), list_of_clients.end(), comparator_client_data_port);
+                  int size = static_cast<int>(list_of_clients.size());
+                  for(int i=0; i < size; i++) {
+                    int sr_no = i + 1;
+                    decode_status = decode_client_status(list_of_clients[i].status, decoded_string);
+                    sprintf(result_string, "%-5d%-35s%-8d%-8d%-8s\n", sr_no, list_of_clients[i].client_name, list_of_clients[i].message_sent, list_of_clients[i].message_recieved, decoded_string);
+                    cse4589_print_and_log(result_string);
+                    fflush(stdout);
+                  }
             } else {
             // TODO: This is the wrong command. Need to check with the requorements to see if any exception has to ber raised for the auto grader.
             }
@@ -203,6 +219,7 @@ int server_starter_function(int argc, char **argv)
           }
           /* Check if new client is requesting connection */
           else if(sock_index == server_socket){
+            printf("Registering the new client");
             fdaccept = register_client(server_socket,client_addr,master_list,head_socket);
             if (fdaccept > 0)
             {
@@ -227,6 +244,7 @@ int server_starter_function(int argc, char **argv)
           }
           /* Read from existing clients */
           else{
+            printf("Reading from existing client.");
             /* Initialize buffer to receieve response */
             char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
             memset(buffer, '\0', BUFFER_SIZE);
@@ -270,6 +288,10 @@ int server_starter_function(int argc, char **argv)
 
             // free(buffer);
           }
+        }
+        else
+        {
+          //printf("Not a part of list\n");
         }
       }
     }
