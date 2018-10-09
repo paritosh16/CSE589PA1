@@ -120,6 +120,29 @@ int print_client_data_vector(std::vector<client_data>* client_details) {
 }
 
 /* Comparator function to sort the vector based on the port number.*/
-int comparator_client_data_port(client_data record_a, client_data record_b) {
+bool comparator_client_data_port(const client_data &record_a, const client_data &record_b) {
+  if(record_a.client_port == record_b.client_port) {
+    return false;
+  }
   return record_a.client_port < record_b.client_port;
+}
+
+/* Function to print the output of the statistics command from the vector.*/
+int print_statistics(std::vector<client_data>* client_details) {
+  int size = (*client_details).size();
+  for(int i=0; i < size; i++) {
+    printf("%-5d%-35s%-8d%-8d%-8s\n", i+1, (*client_details)[i].client_name, (*client_details)[i].message_sent, (*client_details)[i].message_recieved, (*client_details)[i].status);
+  }
+  return 0;
+}
+
+/* Function to decode the string status from the int in the vector.*/
+int decode_client_status(int status, char* decoded_string) {
+  switch(status) {
+    case 0:
+      strcpy(decoded_string, "logged-out");
+    case 1:
+      strcpy(decoded_string, "logged-in");
+  }
+  return 0;
 }

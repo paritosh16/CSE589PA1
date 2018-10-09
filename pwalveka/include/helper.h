@@ -25,6 +25,8 @@ int serialize_client_data(std::vector<client_data>* client_data, char* serialize
 int deserialize_client_data(std::vector<client_data>* client_data, char* serialized_data);
 std::string ToString(int value);
 int print_client_data_vector(std::vector<client_data>* client_details);
-int comparator_client_data_port(client_data record_a, client_data record_b);
+bool comparator_client_data_port(const client_data &record_a, const client_data &record_b);
+int print_statistics(std::vector<client_data>* client_details);
+int decode_client_status(int status, char* decoded_status);
 
 #endif
