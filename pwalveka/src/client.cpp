@@ -173,8 +173,7 @@ int client_starter_function(int argc, char **argv)
 			// Check for the SEND command.
 			} else if(strcmp(command, LIST_COMMAND) == 0) {
 			// Check for the LIST command.
-				std::sort(all_clients.begin(), all_clients.end(), comparator_client_data_port);
-				print_client_data_vector(&all_clients);
+			
 			} else if(strcmp(command, BROADCAST_COMMAND) == 0){
 			// Check for the BROADCAST command.
 			} else if(strcmp(command, BLOCK_COMMAND) == 0){

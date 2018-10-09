@@ -311,15 +311,15 @@ struct client_data add_new_client(int &fdsocket,struct sockaddr_in& client_addr)
   printf("The hostname of the client is : %s\n",new_client.client_ip_address);
   char servicebuf[100];
   int hostname_from_addr = getnameinfo((struct sockaddr *)&client_addr, sizeof(client_addr), new_client.client_name, sizeof(new_client.client_name), NULL, 0, NI_NAMEREQD);
-  // hostent* host_info = gethostbyname(new_client.client_name);
-  // struct in_addr **addr_list = (struct in_addr **) host_info->h_addr_list;
-  // for(int i = 0; addr_list[i] != NULL; i++)
-  // {
-  //     // Return the first one;
-  //     strcpy(new_client.client_ip_address , inet_ntoa(*addr_list[i]) );
-  //     break;
-  // }
-  // printf("This is client ip address:%s\n",new_client.client_ip_address);
+   hostent* host_info = gethostbyname(new_client.client_name);
+   struct in_addr **addr_list = (struct in_addr **) host_info->h_addr_list;
+   for(int i = 0; addr_list[i] != NULL; i++)
+   {
+       // Return the first one;
+       strcpy(new_client.client_ip_address , inet_ntoa(*addr_list[i]) );
+       break;
+   }
+  printf("%d\n", ntohs(client_addr.sin_port));
   new_client.client_port = ntohs(client_addr.sin_port);
   new_client.message_sent = 0;
   new_client.message_recieved = 0;
