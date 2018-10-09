@@ -29,6 +29,7 @@
 #include <string>
 #include <arpa/inet.h>
 #include <vector>
+#include <algorithm>
 
 
 #include "../include/client.h"
@@ -143,7 +144,7 @@ int client_starter_function(int argc, char **argv)
 				char* server_ip = tokenized_command[1];
 				int server_port = atoi(tokenized_command[2]);
 
-				server = connect_to_host(server_ip, server_port);
+				server = connect_to_host(server_ip, server_port, atoi(port_number));
 
 				printf("Server Object:%d\n", server);
 				printf("Server IP:%s\n", server_ip);
@@ -162,8 +163,8 @@ int client_starter_function(int argc, char **argv)
 
 				if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
 					int deserialize_status = deserialize_client_data(&all_clients, buffer);
-					printf("Server responded:\n");
-					print_client_data_vector(&all_clients);
+					// printf("Server responded:\n");
+					//print_client_data_vector(&all_clients);
 					fflush(stdout);
 				}
 			} else if(strcmp(command, REFRESH_COMMAND) == 0){
@@ -172,6 +173,7 @@ int client_starter_function(int argc, char **argv)
 			// Check for the SEND command.
 			} else if(strcmp(command, LIST_COMMAND) == 0) {
 			// Check for the LIST command.
+				print_client_data_vector(&all_clients);			
 			} else if(strcmp(command, BROADCAST_COMMAND) == 0){
 			// Check for the BROADCAST command.
 			} else if(strcmp(command, BLOCK_COMMAND) == 0){
@@ -184,22 +186,34 @@ int client_starter_function(int argc, char **argv)
 			// Check for the LOGOUT command.
 			} else if(strcmp(command, EXIT_COMMAND) == 0){
 			// Check for the EXIT command.
-			} else if(strcmp(command, STATISTICS_COMMAND) == 0){
-			// Check for the STATISTICS command.
 			} else {
 			// TODO: This is the wrong command. Need to check with the requorements to see if any exception has to ber raised for the auto grader.
 			}
 	}
 }
 
-int connect_to_host(char *server_ip, int server_port)
+int connect_to_host(char *server_ip, int server_port, int port_number)
 {
+		printf("This is the port number we got:\n");
+		printf("%d", port_number);
+		printf("%d", htons(port_number));
+		
     int fdsocket, len;
     struct sockaddr_in remote_server_addr;
 
     fdsocket = socket(AF_INET, SOCK_STREAM, 0);
     if(fdsocket < 0)
        perror("Failed to create socket");
+
+		/*Binding the client to a specific port*/
+		struct sockaddr_in device_address;
+		device_address.sin_family = AF_INET;
+		device_address.sin_addr.s_addr = INADDR_ANY;
+		device_address.sin_port = htons(port_number);
+		if (bind(fdsocket, (struct sockaddr*) &device_address, sizeof(struct sockaddr_in)) == 0) 
+				printf("Binded Correctly\n"); 
+		else
+				printf("Unable to bind\n"); 
 
     bzero(&remote_server_addr, sizeof(remote_server_addr));
     remote_server_addr.sin_family = AF_INET;
@@ -209,5 +223,6 @@ int connect_to_host(char *server_ip, int server_port)
     if(connect(fdsocket, (struct sockaddr*)&remote_server_addr, sizeof(remote_server_addr)) < 0)
         perror("Connect failed");
 
+		printf("Connected to host.\n");
     return fdsocket;
 }

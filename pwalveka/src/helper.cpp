@@ -52,7 +52,11 @@ int serialize_client_data(std::vector<client_data>* client_data, char* serialize
     // Add client name.
     std::string retrieve_char_array = std::string((*client_data)[i].client_name);
     temporary_string.append(retrieve_char_array);
-    printf("%s",(*client_data)[i].client_name);
+    // Add a delimeter.
+    temporary_string.append(std::string(","));
+    // Add client name.
+    std::string retrieve_char_array2 = std::string((*client_data)[i].client_ip_address);
+    temporary_string.append(retrieve_char_array2);
     // Add a delimeter.
     temporary_string.append(std::string(","));
     // Add the client port.
@@ -83,6 +87,8 @@ int deserialize_client_data(std::vector<client_data>* client_data, char* seriali
     char* item = strtok(client_details, ",");
     strcpy(temp_data.client_name,item);
     item = strtok(NULL, ",");
+    strcpy(temp_data.client_ip_address, item);
+    item = strtok(NULL, ",");
     temp_data.client_port = atoi(item);
     item = strtok(NULL, ",");
     temp_data.status = atoi(item);
@@ -103,10 +109,17 @@ std::string ToString(int value) {
 int print_client_data_vector(std::vector<client_data>* client_details) {
   int size = (*client_details).size();
   for(int i=0; i < size; i++) {
-    printf("Client No %d:\n", i);
-    printf("Hostname:%s\n", (*client_details)[i].client_name);
-    printf("Port:%d\n", (*client_details)[i].client_port);
-    printf("Status:%d\n", (*client_details)[i].status);
+    // printf("Client No %d:\n", i);
+    // printf("Hostname:%s\n", (*client_details)[i].client_name);
+    // printf("IP Address:%s\n", (*client_details)[i].client_ip_address);
+    // printf("Port:%d\n", (*client_details)[i].client_port);
+    // printf("Status:%d\n", (*client_details)[i].status);
+    printf("%-5d%-35s%-20s%-8d\n", i+1, (*client_details)[i].client_name, (*client_details)[i].client_ip_address, (*client_details)[i].client_port);
   }
   return 0;
+}
+
+/* Comparator function to sort the vector based on the port number.*/
+int comparator_client_data_port(client_data record_a, client_data record_b) {
+  return record_a.client_port < record_b.client_port;
 }
