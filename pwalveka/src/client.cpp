@@ -86,6 +86,7 @@ int client_starter_function(int argc, char **argv)
 	char result_string[100];
 
 	while(TRUE){
+
 		// Copy the master list into watch list. Play on the watchlist.
 		memcpy(&watch_list, &master_list, sizeof(master_list));
 
@@ -212,6 +213,7 @@ int client_starter_function(int argc, char **argv)
 								strcpy(result_string, "[LOGIN:SUCCESS]\n[LOGIN:END]\n");
 								cse4589_print_and_log(result_string);
 							}
+							printf("Last line of login.\n");
 							fflush(stdout);
 						} else if(strcmp(command, REFRESH_COMMAND) == 0){
 						// Check for the REFRESH command.
@@ -224,7 +226,7 @@ int client_starter_function(int argc, char **argv)
 							memset(buffer, '\0', BUFFER_SIZE);
 
 							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
-								all_clients.erase(all_clients.begin() + all_clients.size() - 1);
+								all_clients.clear();
 								int deserialize_status = deserialize_client_data(&all_clients, buffer);
 								strcpy(result_string, "[REFRESH:SUCCESS]\n[REFRESH:END]\n");
 								cse4589_print_and_log(result_string);
