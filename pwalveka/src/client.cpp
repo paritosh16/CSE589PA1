@@ -197,11 +197,9 @@ int client_starter_function(int argc, char **argv)
 							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command))
 									printf("Done!\n");
 							fflush(stdout);
-							printf("stdout flushed.");
 
 							/* Initialize buffer to receieve response */
 							char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
-							printf("ALlocated buffer.");
 							memset(buffer, '\0', BUFFER_SIZE);
 
 							printf("Just before recieve: ");
@@ -215,16 +213,12 @@ int client_starter_function(int argc, char **argv)
 						// Check for the REFRESH command.
 						} else if(strcmp(command, SEND_COMMAND) == 0){
 						// Check for the SEND command.
-							printf("Head socket is :%d\n", head_socket);
 							if(send(server, cmd, strlen(cmd), 0) == strlen(cmd))
-								printf("The socket descriptor for socket is: %d\n", server);
-								printf("Buffer: %s\n", cmd);
 								printf("Done!\n");
 							fflush(stdout);
 						} else if(strcmp(command, LIST_COMMAND) == 0) {
 						// Check for the LIST command.
-							printf("Inside list for no reason");
-							//std::sort(all_clients.begin(), all_clients.end(), comparator_client_data_port);
+							std::sort(all_clients.begin(), all_clients.end(), comparator_client_data_port);
 							int size = static_cast<int>(all_clients.size());
 							for(int i=0; i < size; i++) {
 								int sr_no = i + 1;
