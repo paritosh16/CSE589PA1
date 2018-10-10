@@ -276,7 +276,17 @@ int server_starter_function(int argc, char **argv)
                 // Logic for Login command.
               } else if (strcmp(command, SEND_COMMAND) == 0) {
               // Check for the SEND command.
-                // Logic for send command.
+                printf("Got a send command\n");
+                int socket_to_send = search_client(tokenized_command[1],list_of_clients);
+                if (socket_to_send > 0)
+                {
+                if(send(socket_to_send, tokenized_command[2], strlen(tokenized_command[2]), 0) == strlen(tokenized_command[2]))
+                  printf("Transmitted to client!\n");  
+                }
+                else
+                {
+                printf("Invalid IP\n");
+}
               } else if(strcmp(command, BROADCAST_COMMAND) == 0) {
               // Check for BROADCAST command.
                 // Logic for BROADCAST command.
@@ -325,27 +335,6 @@ int server_starter_function(int argc, char **argv)
               }
             }
             free(buffer);            
-            // char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
-            // memset(buffer, '\0', BUFFER_SIZE);
-
-            // if(recv(sock_index, buffer, BUFFER_SIZE, 0) <= 0){
-            //   close(sock_index);
-            //   printf("Remote Host terminated connection!\n");
-
-            //   /* Remove from watched list */
-            //   FD_CLR(sock_index, &master_list);
-            // }
-            // else {
-            //   //Process incoming data from existing clients here ...
-
-            //   printf("\nClient sent me: %s\n", buffer);
-            //   printf("ECHOing it back to the remote host ... ");
-            //   if(send(sock_index, buffer, strlen(buffer), 0) == strlen(buffer))
-            //     printf("Done!\n");
-            //   fflush(stdout);
-            // }
-
-            // free(buffer);
           }
         }
         else
@@ -399,4 +388,21 @@ struct client_data add_new_client(int &fdsocket,struct sockaddr_in& client_addr)
   new_client.message_recieved = 0;
   new_client.status = 1;
   return new_client;
+}
+
+
+/* Function that takes domain address & port and looks for the corresponding file descriptor*/
+
+int search_client(char *client_ip_address,std::vector<client_data>& list_of_clients)
+{
+  for(int i = 0; i < list_of_clients.size();i++)
+  {
+    
+    if (strcmp(client_ip_address,list_of_clients[i].client_ip_address) == 0)
+    {
+      return list_of_clients[i].sock_decriptor;
+    }
+  }
+
+  return -1;
 }

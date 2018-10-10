@@ -188,7 +188,7 @@ int client_starter_function(int argc, char **argv)
 
 							/* Adding the new socket to the currently watched sockets.*/
 							FD_SET(server, &master_list);
-            	if(server > head_socket) head_socket = server;
+            				if(server > head_socket) head_socket = server;
 
 							printf("Server Object:%d\n", server);
 							printf("Server IP:%s\n", server_ip);
@@ -233,7 +233,7 @@ int client_starter_function(int argc, char **argv)
 						} else if(strcmp(command, SEND_COMMAND) == 0){
 						// Check for the SEND command.
 							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
-								printf("Done!\n");
+								printf("Done senfing it to the server\n");
 							fflush(stdout);
 						} else if(strcmp(command, LIST_COMMAND) == 0) {
 						// Check for the LIST command.
