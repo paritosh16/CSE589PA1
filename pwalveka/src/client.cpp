@@ -86,6 +86,7 @@ int client_starter_function(int argc, char **argv)
 	char result_string[100];
 
 	while(TRUE){
+
 		// Copy the master list into watch list. Play on the watchlist.
 		memcpy(&watch_list, &master_list, sizeof(master_list));
 
@@ -181,38 +182,60 @@ int client_starter_function(int argc, char **argv)
 							cse4589_print_and_log(result_string);
 						} else if(strcmp(command, LOGIN_COMMAND) == 0) {
 						// Check for the LOGIN command. 
-							char* server_ip = tokenized_command[1];
-							int server_port = atoi(tokenized_command[2]);
+							if(is_logged_in) {
+							// No need to create socket. Just let the server know that the client has logged in.
+								if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
+									printf("Already Logged in! Notifying the server.\n");
+								}
 
-							server = connect_to_host(server_ip, server_port, atoi(port_number));
+								/* Initialize buffer to receieve response */
+								char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+								memset(buffer, '\0', BUFFER_SIZE);
 
-							/* Adding the new socket to the currently watched sockets.*/
-							FD_SET(server, &master_list);
-            	if(server > head_socket) head_socket = server;
+								if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
+									all_clients.clear();
+									int deserialize_status = deserialize_client_data(&all_clients, buffer);
+									is_logged_in = true;
+									strcpy(result_string, "[LOGIN:SUCCESS]\n[LOGIN:END]\n");
+									cse4589_print_and_log(result_string);
+								}
+								fflush(stdout);
 
-							printf("Server Object:%d\n", server);
-							printf("Server IP:%s\n", server_ip);
-							printf("Server Port:%d\n", server_port);
-							
-							printf("I got: %s(size:%d chars)\n", command_to_send, strlen(command_to_send));
+							} else {
+							// Need to create a socket as this is the very first time that the client is logging in.
+								char* server_ip = tokenized_command[1];
+								int server_port = atoi(tokenized_command[2]);
 
-							printf("\nSENDing it to the remote server ... \n");
-							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
-									printf("Done!\n");
-							fflush(stdout);
+								server = connect_to_host(server_ip, server_port, atoi(port_number));
 
-							/* Initialize buffer to receieve response */
-							char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
-							memset(buffer, '\0', BUFFER_SIZE);
+								/* Adding the new socket to the currently watched sockets.*/
+								FD_SET(server, &master_list);
+								if(server > head_socket) head_socket = server;
 
-							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
-								int deserialize_status = deserialize_client_data(&all_clients, buffer);
-								is_logged_in = true;
-								// TODO: Print out the buffered messages here.
-								strcpy(result_string, "[LOGIN:SUCCESS]\n[LOGIN:END]\n");
-								cse4589_print_and_log(result_string);
+								printf("Server Object:%d\n", server);
+								printf("Server IP:%s\n", server_ip);
+								printf("Server Port:%d\n", server_port);
+								
+								printf("I got: %s(size:%d chars)\n", command_to_send, strlen(command_to_send));
+
+								printf("\nSENDing it to the remote server ... \n");
+								// if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
+								// 		printf("Done!\n");
+								// fflush(stdout);
+
+								/* Initialize buffer to receieve response */
+								char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+								memset(buffer, '\0', BUFFER_SIZE);
+
+								if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
+									int deserialize_status = deserialize_client_data(&all_clients, buffer);
+									// TODO: Print out the buffered messages here.
+									is_logged_in = true;
+									strcpy(result_string, "[LOGIN:SUCCESS]\n[LOGIN:END]\n");
+									cse4589_print_and_log(result_string);
+								}
+								fflush(stdout);							
 							}
-							fflush(stdout);
 						} else if(strcmp(command, REFRESH_COMMAND) == 0){
 						// Check for the REFRESH command.
 							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
@@ -224,7 +247,7 @@ int client_starter_function(int argc, char **argv)
 							memset(buffer, '\0', BUFFER_SIZE);
 
 							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
-								all_clients.erase(all_clients.begin() + all_clients.size() - 1);
+								all_clients.clear();
 								int deserialize_status = deserialize_client_data(&all_clients, buffer);
 								strcpy(result_string, "[REFRESH:SUCCESS]\n[REFRESH:END]\n");
 								cse4589_print_and_log(result_string);
@@ -237,15 +260,22 @@ int client_starter_function(int argc, char **argv)
 							fflush(stdout);
 						} else if(strcmp(command, LIST_COMMAND) == 0) {
 						// Check for the LIST command.
+							strcpy(result_string, "[LIST:SUCCESS]\n");
+							cse4589_print_and_log(result_string);
 							std::sort(all_clients.begin(), all_clients.end(), comparator_client_data_port);
 							int size = static_cast<int>(all_clients.size());
+							int sr_no = 1;
 							for(int i=0; i < size; i++) {
-								int sr_no = i + 1;
 								char result_string[100];
-								sprintf(result_string, "%-5d%-35s%-20s%-8d\n", sr_no, all_clients[i].client_name, all_clients[i].client_ip_address, all_clients[i].client_port);
-								cse4589_print_and_log(result_string);
+								if(all_clients[i].status == 1) {
+									sprintf(result_string, "%-5d%-35s%-20s%-8d\n", sr_no, all_clients[i].client_name, all_clients[i].client_ip_address, all_clients[i].client_port);
+									cse4589_print_and_log(result_string);
+									sr_no++;
+								}
 								fflush(stdout);
-							}		
+							}	
+							strcpy(result_string, "[LIST:END]\n");
+							cse4589_print_and_log(result_string);	
 						} else if(strcmp(command, BROADCAST_COMMAND) == 0){
 						// Check for the BROADCAST command.
 						} else if(strcmp(command, BLOCK_COMMAND) == 0){
@@ -263,19 +293,31 @@ int client_starter_function(int argc, char **argv)
 							memset(buffer, '\0', BUFFER_SIZE);
 
 							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
-								is_logged_in = false;
+								strcpy(result_string, "[LOGOUT:SUCCESS]\n[LOGOUT:END]\n");
+								cse4589_print_and_log(result_string);
 							}
 							fflush(stdout);
 						} else if(strcmp(command, EXIT_COMMAND) == 0){
 						// Check for the EXIT command.
 							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
 								printf("Done!\n");
+							}
+
+							/* Initialize buffer to receieve response */
+							char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+							memset(buffer, '\0', BUFFER_SIZE);
+
+							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
+								//strcpy(result_string, "[EXIT:SUCCESS]\n[EXIT:END]\n");
+								//cse4589_print_and_log(result_string);
 								exit(0);
 							}
 							fflush(stdout);
 						} else {
 						// TODO: This is the wrong command. Need to check with the requorements to see if any exception has to ber raised for the auto grader.
 						}
+						free(command_to_send);
+						free(cmd);
 					} else {
 						// Receive from socket.
 						/* Initialize buffer to receieve response */
