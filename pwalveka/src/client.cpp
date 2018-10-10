@@ -182,39 +182,60 @@ int client_starter_function(int argc, char **argv)
 							cse4589_print_and_log(result_string);
 						} else if(strcmp(command, LOGIN_COMMAND) == 0) {
 						// Check for the LOGIN command. 
-							char* server_ip = tokenized_command[1];
-							int server_port = atoi(tokenized_command[2]);
+							if(is_logged_in) {
+							// No need to create socket. Just let the server know that the client has logged in.
+								if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
+									printf("Already Logged in! Notifying the server.\n");
+								}
 
-							server = connect_to_host(server_ip, server_port, atoi(port_number));
+								/* Initialize buffer to receieve response */
+								char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+								memset(buffer, '\0', BUFFER_SIZE);
 
-							/* Adding the new socket to the currently watched sockets.*/
-							FD_SET(server, &master_list);
-            	if(server > head_socket) head_socket = server;
+								if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
+									all_clients.clear();
+									int deserialize_status = deserialize_client_data(&all_clients, buffer);
+									strcpy(result_string, "[LOGIN:SUCCESS]\n[LOGIN:END]\n");
+									cse4589_print_and_log(result_string);
+								}
+								fflush(stdout);
 
-							printf("Server Object:%d\n", server);
-							printf("Server IP:%s\n", server_ip);
-							printf("Server Port:%d\n", server_port);
-							
-							printf("I got: %s(size:%d chars)\n", command_to_send, strlen(command_to_send));
+							} else {
+							// Need to create a socket as this is the very first time that the client is logging in.
+								char* server_ip = tokenized_command[1];
+								int server_port = atoi(tokenized_command[2]);
 
-							printf("\nSENDing it to the remote server ... \n");
-							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
-									printf("Done!\n");
-							fflush(stdout);
+								server = connect_to_host(server_ip, server_port, atoi(port_number));
 
-							/* Initialize buffer to receieve response */
-							char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
-							memset(buffer, '\0', BUFFER_SIZE);
+								/* Adding the new socket to the currently watched sockets.*/
+								FD_SET(server, &master_list);
+								if(server > head_socket) head_socket = server;
 
-							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
-								int deserialize_status = deserialize_client_data(&all_clients, buffer);
-								is_logged_in = true;
-								// TODO: Print out the buffered messages here.
-								strcpy(result_string, "[LOGIN:SUCCESS]\n[LOGIN:END]\n");
-								cse4589_print_and_log(result_string);
+								printf("Server Object:%d\n", server);
+								printf("Server IP:%s\n", server_ip);
+								printf("Server Port:%d\n", server_port);
+								
+								printf("I got: %s(size:%d chars)\n", command_to_send, strlen(command_to_send));
+
+								printf("\nSENDing it to the remote server ... \n");
+								if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
+										printf("Done!\n");
+								fflush(stdout);
+
+								/* Initialize buffer to receieve response */
+								char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+								memset(buffer, '\0', BUFFER_SIZE);
+
+								if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
+									int deserialize_status = deserialize_client_data(&all_clients, buffer);
+									is_logged_in = true;
+									// TODO: Print out the buffered messages here.
+									strcpy(result_string, "[LOGIN:SUCCESS]\n[LOGIN:END]\n");
+									cse4589_print_and_log(result_string);
+								}
+								printf("Last line of login.\n");
+								fflush(stdout);							
 							}
-							printf("Last line of login.\n");
-							fflush(stdout);
 						} else if(strcmp(command, REFRESH_COMMAND) == 0){
 						// Check for the REFRESH command.
 							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {

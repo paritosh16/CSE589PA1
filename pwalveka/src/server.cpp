@@ -277,7 +277,17 @@ int server_starter_function(int argc, char **argv)
 
               if(strcmp(command, LOGIN_COMMAND) == 0) {
               // Check for the LOGIN command.
-                // Logic for Login command.
+                int index;
+                // Get the client details
+                int status = get_client_data_from_sock(sock_index, &list_of_clients, &index);
+                // Set the status of client to logged in.
+                list_of_clients[index].status = 1;
+                // Serialize the data.
+                char *serialized_data = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+                int serialize_status = serialize_client_data(&list_of_clients, serialized_data);
+                if(send(sock_index, serialized_data, BUFFER_SIZE, 0) == BUFFER_SIZE)
+                  printf("LOGIN (for already logged-in client) done!\n");
+                fflush(stdout);
               } else if (strcmp(command, SEND_COMMAND) == 0) {
               // Check for the SEND command.
                 // Logic for send command.
