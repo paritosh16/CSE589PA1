@@ -303,14 +303,13 @@ int client_starter_function(int argc, char **argv)
 								printf("Done!\n");
 							}
 
-
 							/* Initialize buffer to receieve response */
 							char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
 							memset(buffer, '\0', BUFFER_SIZE);
 
 							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
-								strcpy(result_string, "[EXIT:SUCCESS]\n[EXIT:END]\n");
-								cse4589_print_and_log(result_string);
+								//strcpy(result_string, "[EXIT:SUCCESS]\n[EXIT:END]\n");
+								//cse4589_print_and_log(result_string);
 								exit(0);
 							}
 							fflush(stdout);
