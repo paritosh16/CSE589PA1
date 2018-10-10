@@ -264,6 +264,8 @@ int client_starter_function(int argc, char **argv)
 
 							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
 								is_logged_in = false;
+								strcpy(result_string, "[LOGOUT:SUCCESS]\n[LOGOUT:END]\n");
+								cse4589_print_and_log(result_string);
 							}
 							fflush(stdout);
 						} else if(strcmp(command, EXIT_COMMAND) == 0){
@@ -271,6 +273,16 @@ int client_starter_function(int argc, char **argv)
 							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
 								printf("Done!\n");
 								exit(0);
+							}
+
+
+							/* Initialize buffer to receieve response */
+							char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+							memset(buffer, '\0', BUFFER_SIZE);
+
+							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
+								strcpy(result_string, "[EXIT:SUCCESS]\n[EXIT:END]\n");
+								cse4589_print_and_log(result_string);
 							}
 							fflush(stdout);
 						} else {
