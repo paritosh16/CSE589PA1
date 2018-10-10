@@ -106,9 +106,13 @@ int client_starter_function(int argc, char **argv)
           /* Check if new command on STDIN */
           if (sock_index == STDIN){
 						char *cmd = (char*) malloc(sizeof(char)*cmd_SIZE);
+						char *command_to_send = (char*) malloc(sizeof(char)*cmd_SIZE);
 						memset(cmd, '\0', cmd_SIZE);
 						if(fgets(cmd, cmd_SIZE-1, stdin) == NULL) //Mind the newline character that will be written to cmd
 								exit(-1);
+
+						// Save the original command to be sent over to server.
+						strcpy(command_to_send, cmd);
 
 						// Get rid of the newline character if there is one.
 						int len = strlen(cmd); //where buff is your char array fgets is using
@@ -187,10 +191,10 @@ int client_starter_function(int argc, char **argv)
 							printf("Server IP:%s\n", server_ip);
 							printf("Server Port:%d\n", server_port);
 							
-							printf("I got: %s(size:%d chars)\n", cmd, strlen(cmd));
+							printf("I got: %s(size:%d chars)\n", command_to_send, strlen(command_to_send));
 
 							printf("\nSENDing it to the remote server ... \n");
-							if(send(server, cmd, strlen(cmd), 0) == strlen(cmd))
+							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command))
 									printf("Done!\n");
 							fflush(stdout);
 							printf("stdout flushed.");
