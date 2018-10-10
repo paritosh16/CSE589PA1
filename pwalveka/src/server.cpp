@@ -118,7 +118,7 @@ int server_starter_function(int argc, char **argv)
 
   while(TRUE){
     memcpy(&watch_list, &master_list, sizeof(master_list));
-
+    printf("%d \n", head_socket);
     //printf("\n[PA1-Server@CSE489/589]$ ");
     //fflush(stdout);
 
@@ -219,7 +219,7 @@ int server_starter_function(int argc, char **argv)
           }
           /* Check if new client is requesting connection */
           else if(sock_index == server_socket){
-            printf("Registering the new client");
+            printf("Registering the new client\n");
             fdaccept = register_client(server_socket,client_addr,master_list,head_socket);
             if (fdaccept > 0)
             {
@@ -260,33 +260,24 @@ int server_starter_function(int argc, char **argv)
               //Process incoming data from existing clients here ...
               printf("The size of sockets so far:%d\n",head_socket);  
               printf("\nClient sent me: %s\n", buffer);
+              printf("Searching for the socket to send\n");
+              int temp_socket = search_client(buffer,list_of_clients);
+              if (temp_socket > 0)
+              {
+                if(send(temp_socket, buffer, strlen(buffer), 0) == strlen(buffer))
+                  printf("Transmitted to client!\n");  
+              }
+              else
+              {
+                printf("Invalid IP\n");
+              }
+              printf("The socket found is : %d\n", temp_socket);
               printf("ECHOing it back to the remote host ... \n");
               if(send(sock_index, buffer, strlen(buffer), 0) == strlen(buffer))
                 printf("Done!\n");
               fflush(stdout);
             }
             free(buffer);            
-            // char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
-            // memset(buffer, '\0', BUFFER_SIZE);
-
-            // if(recv(sock_index, buffer, BUFFER_SIZE, 0) <= 0){
-            //   close(sock_index);
-            //   printf("Remote Host terminated connection!\n");
-
-            //   /* Remove from watched list */
-            //   FD_CLR(sock_index, &master_list);
-            // }
-            // else {
-            //   //Process incoming data from existing clients here ...
-
-            //   printf("\nClient sent me: %s\n", buffer);
-            //   printf("ECHOing it back to the remote host ... ");
-            //   if(send(sock_index, buffer, strlen(buffer), 0) == strlen(buffer))
-            //     printf("Done!\n");
-            //   fflush(stdout);
-            // }
-
-            // free(buffer);
           }
         }
         else
@@ -305,17 +296,23 @@ int server_starter_function(int argc, char **argv)
 
 int register_client(int& server_socket,struct sockaddr_in& client_addr,fd_set& master_list,int& head_socket)
 {
+  printf("Inside register new client\n");
   int new_socket_descriptor = 0;
   socklen_t caddr_len = sizeof(client_addr);
   new_socket_descriptor = accept(server_socket, (struct sockaddr *)&client_addr, &caddr_len);
+  printf("New socket is just after accept %d\n",new_socket_descriptor );
   if(new_socket_descriptor < 0)
-      perror("Accept failed.");
-      return new_socket_descriptor;
+  {
+    perror("Accept failed.");
+    return new_socket_descriptor;
+  }
+      
 
   printf("\nRemote Host connected!\n");
       
   /* Add to watched socket list */
   FD_SET(new_socket_descriptor, &master_list);
+  printf("New sock_decriptor is : %d\n",new_socket_descriptor);
   if(new_socket_descriptor > head_socket) head_socket = new_socket_descriptor;
 
   return new_socket_descriptor;
@@ -340,3 +337,36 @@ struct client_data add_new_client(int &fdsocket,struct sockaddr_in& client_addr)
   new_client.status = 1;
   return new_client;
 }
+
+/* Function that takes domain address & port and looks for the corresponding file descriptor*/
+int search_client(char *client_ip_address,std::vector<client_data>& list_of_clients)
+{
+  for(int i = 0; i < list_of_clients.size();i++)
+  {
+    
+    if (strcmp(client_ip_address,list_of_clients[i].client_ip_address) == 0)
+    {
+      return list_of_clients[i].sock_decriptor;
+    }
+  }
+
+  return -1;
+}
+
+
+/*Function that sends message to the given client  */
+/*
+int send_to_client(char *client_addr,int *client_socket,char *message)
+{
+  if(send(client_socket, message, strlen(message), 0) == strlen(message))
+  {
+    printf("Done!\n");
+  }
+  else
+  {
+    printf("Unable to send the message\n");
+    return -1;
+  }
+
+  return 1;
+}*/
