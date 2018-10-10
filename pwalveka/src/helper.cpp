@@ -138,11 +138,10 @@ int print_statistics(std::vector<client_data>* client_details) {
 
 /* Function to decode the string status from the int in the vector.*/
 int decode_client_status(int status, char* decoded_string) {
-  switch(status) {
-    case 0:
-      strcpy(decoded_string, "logged-out");
-    case 1:
-      strcpy(decoded_string, "logged-in");
+  if(status == 0) {
+    strcpy(decoded_string, "logged-out");
+  } else if(status == 1){
+    strcpy(decoded_string, "logged-in");
   }
   return 0;
 }
