@@ -212,8 +212,9 @@ int server_starter_function(int argc, char **argv)
                     cse4589_print_and_log(result_string);
                     fflush(stdout);
                   }
+            // Check for the logout command. 
             } else {
-            // TODO: This is the wrong command. Need to check with the requorements to see if any exception has to ber raised for the auto grader.
+              // TODO: This is the wrong command. Need to check with the requorements to see if any exception has to ber raised for the auto grader.
             }
             free(cmd);
           }
@@ -244,7 +245,6 @@ int server_starter_function(int argc, char **argv)
           }
           /* Read from existing clients */
           else{
-            printf("Reading from existing client.");
             /* Initialize buffer to receieve response */
             char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
             memset(buffer, '\0', BUFFER_SIZE);
@@ -252,43 +252,47 @@ int server_starter_function(int argc, char **argv)
             if(recv(sock_index, buffer, BUFFER_SIZE, 0) <= 0){
               close(sock_index);
               printf("Remote Host terminated connection!\n");
-            
-            // The array that holds the tokenized client command.
-						std::vector<char*> tokenized_command;
-										
-						// Tokenize the command.
-						int tokenize_status = tokenize_command(&tokenized_command, buffer);
-						if(tokenize_status) {
-							// Some error occured. 
-							exit(1);
-						}
-
-						// Get the command from the vector.
-						const char* command = tokenized_command[0];
-
-            // Check for the LOGIN command.
-            if(strcmp(command, LOGIN_COMMAND) == 0) {
-              // Logic for Login command.
-            // Check for the SEND command.
-            } else if (strcmp(command, SEND_COMMAND) == 0) {
-              // Logic for send command.
-            // Check for BROADCAST command.
-            } else if(strcmp(command, BROADCAST_COMMAND)) {
-              // Logic for BROADCAST command.
-            // Check for LOGOUT command.
-            } else if(strcmp(command, LOGOUT_COMMAND)) {
-              // Logic for logout command.
-            } else {
-              // Not a valid command.
-            }
               /* Remove from watched list */
               FD_CLR(sock_index, &master_list);
-            }
-            else {
+            } else {
               //Process incoming data from existing clients here ...
-              printf("The size of sockets so far:%d\n",head_socket);  
+              printf("The size of sockets so far:%d\n", head_socket);  
               printf("\nClient sent me: %s\n", buffer);
-              printf("ECHOing it back to the remote host ... \n");
+              //printf("ECHOing it back to the remote host ... \n");
+
+              // The array that holds the tokenized client command.
+              std::vector<char*> tokenized_command;
+                      
+              // Tokenize the command.
+              int tokenize_status = tokenize_command(&tokenized_command, buffer);
+              if(tokenize_status) {
+                // Some error occured. 
+                exit(1);
+              }
+
+              // Get the command from the vector.
+              const char* command = tokenized_command[0];
+
+              // Check for the LOGIN command.
+              if(strcmp(command, LOGIN_COMMAND) == 0) {
+                // Logic for Login command.
+              // Check for the SEND command.
+              } else if (strcmp(command, SEND_COMMAND) == 0) {
+                // Logic for send command.
+              // Check for BROADCAST command.
+              } else if(strcmp(command, BROADCAST_COMMAND) == 0) {
+                // Logic for BROADCAST command.
+              // Check for LOGOUT command.
+              } else if(strcmp(command, LOGOUT_COMMAND) == 0) {
+                // Logic for logout command.
+                int index;
+                // Get the client details
+                int status = get_client_data_from_sock(sock_index, &list_of_clients, &index);
+                // Log out the client.
+                list_of_clients[index].status = 0;
+              } else {
+                // Not a valid command.
+              }
               if(send(sock_index, buffer, strlen(buffer), 0) == strlen(buffer))
                 printf("Done!\n");
               fflush(stdout);
@@ -336,9 +340,10 @@ int register_client(int& server_socket,struct sockaddr_in& client_addr,fd_set& m
   int new_socket_descriptor = 0;
   socklen_t caddr_len = sizeof(client_addr);
   new_socket_descriptor = accept(server_socket, (struct sockaddr *)&client_addr, &caddr_len);
-  if(new_socket_descriptor < 0)
+  if(new_socket_descriptor < 0) {
       perror("Accept failed.");
       return new_socket_descriptor;
+  }
 
   printf("\nRemote Host connected!\n");
       

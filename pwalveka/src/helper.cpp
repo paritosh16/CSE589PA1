@@ -138,11 +138,23 @@ int print_statistics(std::vector<client_data>* client_details) {
 
 /* Function to decode the string status from the int in the vector.*/
 int decode_client_status(int status, char* decoded_string) {
-  switch(status) {
-    case 0:
-      strcpy(decoded_string, "logged-out");
-    case 1:
-      strcpy(decoded_string, "logged-in");
+  if(status == 0) {
+    strcpy(decoded_string, "logged-out");
+  } else if(status == 1){
+    strcpy(decoded_string, "logged-in");
+  }
+  return 0;
+}
+
+/* Given the socket descriptor, find the index of the client in the vector of all clients.*/
+int get_client_data_from_sock(int sock_desc, std::vector<client_data>* list_of_clients, int* index) {
+  int size = static_cast<int>((*list_of_clients).size());
+  for (int i = 0; i < size; i++) {
+    if(sock_desc == (*list_of_clients)[i].sock_decriptor) {
+      // Got the client.
+      *index = i;
+      break;
+    }
   }
   return 0;
 }
