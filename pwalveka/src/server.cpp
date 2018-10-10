@@ -341,9 +341,10 @@ int register_client(int& server_socket,struct sockaddr_in& client_addr,fd_set& m
   int new_socket_descriptor = 0;
   socklen_t caddr_len = sizeof(client_addr);
   new_socket_descriptor = accept(server_socket, (struct sockaddr *)&client_addr, &caddr_len);
-  if(new_socket_descriptor < 0)
+  if(new_socket_descriptor < 0) {
       perror("Accept failed.");
       return new_socket_descriptor;
+  }
 
   printf("\nRemote Host connected!\n");
       
