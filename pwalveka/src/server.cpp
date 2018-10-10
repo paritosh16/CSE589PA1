@@ -198,18 +198,22 @@ int server_starter_function(int argc, char **argv)
               sprintf(result_string, "\n[%s:END]\n", cmd);
               cse4589_print_and_log(result_string);
             } else if(strcmp(cmd, STATISTICS_COMMAND) == 0) {
-                  char decoded_string[20];
-                  char result_string[100];
-                  int decode_status;
-                  std::sort(list_of_clients.begin(), list_of_clients.end(), comparator_client_data_port);
-                  int size = static_cast<int>(list_of_clients.size());
-                  for(int i=0; i < size; i++) {
-                    int sr_no = i + 1;
-                    decode_status = decode_client_status(list_of_clients[i].status, decoded_string);
-                    sprintf(result_string, "%-5d%-35s%-8d%-8d%-8s\n", sr_no, list_of_clients[i].client_name, list_of_clients[i].message_sent, list_of_clients[i].message_recieved, decoded_string);
-                    cse4589_print_and_log(result_string);
-                    fflush(stdout);
-                  }
+              strcpy(result_string, "[STATISTICS:SUCCESS]\n");
+							cse4589_print_and_log(result_string);
+              char decoded_string[20];
+              char result_string[100];
+              int decode_status;
+              std::sort(list_of_clients.begin(), list_of_clients.end(), comparator_client_data_port);
+              int size = static_cast<int>(list_of_clients.size());
+              for(int i=0; i < size; i++) {
+                int sr_no = i + 1;
+                decode_status = decode_client_status(list_of_clients[i].status, decoded_string);
+                sprintf(result_string, "%-5d%-35s%-8d%-8d%-8s\n", sr_no, list_of_clients[i].client_name, list_of_clients[i].message_sent, list_of_clients[i].message_recieved, decoded_string);
+                cse4589_print_and_log(result_string);
+                fflush(stdout);
+              }
+              strcpy(result_string, "[STATISTICS:END]\n");
+							cse4589_print_and_log(result_string);
             // Check for the logout command. 
             } else {
               // TODO: This is the wrong command. Need to check with the requorements to see if any exception has to ber raised for the auto grader.
