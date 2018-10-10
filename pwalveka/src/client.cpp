@@ -237,6 +237,8 @@ int client_starter_function(int argc, char **argv)
 							fflush(stdout);
 						} else if(strcmp(command, LIST_COMMAND) == 0) {
 						// Check for the LIST command.
+							strcpy(result_string, "[LIST:SUCCESS]\n");
+							cse4589_print_and_log(result_string);
 							std::sort(all_clients.begin(), all_clients.end(), comparator_client_data_port);
 							int size = static_cast<int>(all_clients.size());
 							for(int i=0; i < size; i++) {
@@ -245,7 +247,9 @@ int client_starter_function(int argc, char **argv)
 								sprintf(result_string, "%-5d%-35s%-20s%-8d\n", sr_no, all_clients[i].client_name, all_clients[i].client_ip_address, all_clients[i].client_port);
 								cse4589_print_and_log(result_string);
 								fflush(stdout);
-							}		
+							}	
+							strcpy(result_string, "[LIST:END]\n");
+							cse4589_print_and_log(result_string);	
 						} else if(strcmp(command, BROADCAST_COMMAND) == 0){
 						// Check for the BROADCAST command.
 						} else if(strcmp(command, BLOCK_COMMAND) == 0){
@@ -272,7 +276,6 @@ int client_starter_function(int argc, char **argv)
 						// Check for the EXIT command.
 							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
 								printf("Done!\n");
-								exit(0);
 							}
 
 
@@ -283,6 +286,7 @@ int client_starter_function(int argc, char **argv)
 							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
 								strcpy(result_string, "[EXIT:SUCCESS]\n[EXIT:END]\n");
 								cse4589_print_and_log(result_string);
+								exit(0);
 							}
 							fflush(stdout);
 						} else {
