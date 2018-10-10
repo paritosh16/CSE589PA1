@@ -98,8 +98,7 @@ int client_starter_function(int argc, char **argv)
     if(selret < 0)
       perror("select failed.");
 
-		printf("Selret: %d\n", selret);
-		 /* Check if we have sockets/STDIN to process */
+		/* Check if we have sockets/STDIN to process */
     if(selret > 0){
       /* Loop through socket descriptors to check which ones are ready */
       for(sock_index = 0; sock_index <= head_socket; sock_index += 1){
@@ -242,11 +241,19 @@ int client_starter_function(int argc, char **argv)
 						// Check for the LOGOUT command.
 							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
 								printf("Done!\n");
+							}
+
+							/* Initialize buffer to receieve response */
+							char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+							memset(buffer, '\0', BUFFER_SIZE);
+
+							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
 								is_logged_in = false;
 							}
 							fflush(stdout);
-						// Check for the EXIT command.
+						
 						} else if(strcmp(command, EXIT_COMMAND) == 0){
+						// Check for the EXIT command.
 							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
 								printf("Done!\n");
 								exit(0);
@@ -257,7 +264,6 @@ int client_starter_function(int argc, char **argv)
 						}
 					} else {
 						// Receive from socket.
-
 						/* Initialize buffer to receieve response */
 							char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
 							memset(buffer, '\0', BUFFER_SIZE);
