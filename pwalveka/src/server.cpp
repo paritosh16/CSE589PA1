@@ -203,7 +203,7 @@ int server_starter_function(int argc, char **argv)
                   char decoded_string[20];
                   char result_string[100];
                   int decode_status;
-                  //std::sort(list_of_clients.begin(), list_of_clients.end(), comparator_client_data_port);
+                  std::sort(list_of_clients.begin(), list_of_clients.end(), comparator_client_data_port);
                   int size = static_cast<int>(list_of_clients.size());
                   for(int i=0; i < size; i++) {
                     int sr_no = i + 1;
@@ -252,7 +252,35 @@ int server_starter_function(int argc, char **argv)
             if(recv(sock_index, buffer, BUFFER_SIZE, 0) <= 0){
               close(sock_index);
               printf("Remote Host terminated connection!\n");
+            
+            // The array that holds the tokenized client command.
+						std::vector<char*> tokenized_command;
+										
+						// Tokenize the command.
+						int tokenize_status = tokenize_command(&tokenized_command, buffer);
+						if(tokenize_status) {
+							// Some error occured. 
+							exit(1);
+						}
 
+						// Get the command from the vector.
+						const char* command = tokenized_command[0];
+
+            // Check for the LOGIN command.
+            if(strcmp(command, LOGIN_COMMAND) == 0) {
+              // Logic for Login command.
+            // Check for the SEND command.
+            } else if (strcmp(command, SEND_COMMAND) == 0) {
+              // Logic for send command.
+            // Check for BROADCAST command.
+            } else if(strcmp(command, BROADCAST_COMMAND)) {
+              // Logic for BROADCAST command.
+            // Check for LOGOUT command.
+            } else if(strcmp(command, LOGOUT_COMMAND)) {
+              // Logic for logout command.
+            } else {
+              // Not a valid command.
+            }
               /* Remove from watched list */
               FD_CLR(sock_index, &master_list);
             }
