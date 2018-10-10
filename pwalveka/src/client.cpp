@@ -264,12 +264,13 @@ int client_starter_function(int argc, char **argv)
 							cse4589_print_and_log(result_string);
 							std::sort(all_clients.begin(), all_clients.end(), comparator_client_data_port);
 							int size = static_cast<int>(all_clients.size());
+							int sr_no = 0;
 							for(int i=0; i < size; i++) {
-								int sr_no = i + 1;
 								char result_string[100];
 								if(all_clients[i].status == 1) {
 									sprintf(result_string, "%-5d%-35s%-20s%-8d\n", sr_no, all_clients[i].client_name, all_clients[i].client_ip_address, all_clients[i].client_port);
 									cse4589_print_and_log(result_string);
+									sr_no++;
 								}
 								fflush(stdout);
 							}	
