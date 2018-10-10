@@ -127,8 +127,6 @@ int server_starter_function(int argc, char **argv)
     if(selret < 0)
       perror("select failed.");
 
-    printf("Select recieved something\n");
-
     /* Check if we have sockets/STDIN to process */
     if(selret > 0){
       /* Loop through socket descriptors to check which ones are ready */
@@ -256,7 +254,7 @@ int server_starter_function(int argc, char **argv)
               FD_CLR(sock_index, &master_list);
             } else {
               //Process incoming data from existing clients here ...
-              printf("The size of sockets so far:%d\n", head_socket);  
+              //printf("The size of sockets so far:%d\n", head_socket);  
               printf("\nClient sent me: %s\n", buffer);
               //printf("ECHOing it back to the remote host ... \n");
 
@@ -273,23 +271,31 @@ int server_starter_function(int argc, char **argv)
               // Get the command from the vector.
               const char* command = tokenized_command[0];
 
-              // Check for the LOGIN command.
               if(strcmp(command, LOGIN_COMMAND) == 0) {
+              // Check for the LOGIN command.
                 // Logic for Login command.
-              // Check for the SEND command.
               } else if (strcmp(command, SEND_COMMAND) == 0) {
+              // Check for the SEND command.
                 // Logic for send command.
-              // Check for BROADCAST command.
               } else if(strcmp(command, BROADCAST_COMMAND) == 0) {
+              // Check for BROADCAST command.
                 // Logic for BROADCAST command.
-              // Check for LOGOUT command.
               } else if(strcmp(command, LOGOUT_COMMAND) == 0) {
-                // Logic for logout command.
+              // Check for LOGOUT command.
                 int index;
                 // Get the client details
                 int status = get_client_data_from_sock(sock_index, &list_of_clients, &index);
                 // Log out the client.
                 list_of_clients[index].status = 0;
+              } else if (strcmp(command, EXIT_COMMAND) == 0) {
+                // Check for EXIT command.
+                int index;
+                // Get the client details
+                int status = get_client_data_from_sock(sock_index, &list_of_clients, &index);
+                // Log out the client.
+                list_of_clients[index].status = 0;
+                // Delete all the state of the client.
+                list_of_clients.erase(list_of_clients.begin() + index);
               } else {
                 // Not a valid command.
               }
