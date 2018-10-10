@@ -284,12 +284,20 @@ int server_starter_function(int argc, char **argv)
                 // Logic for BROADCAST command.
               // Check for LOGOUT command.
               } else if(strcmp(command, LOGOUT_COMMAND) == 0) {
-                // Logic for logout command.
                 int index;
                 // Get the client details
                 int status = get_client_data_from_sock(sock_index, &list_of_clients, &index);
                 // Log out the client.
                 list_of_clients[index].status = 0;
+              // Check for EXIT command.
+              } else if (strcmp(command, EXIT_COMMAND) == 0) {
+                int index;
+                // Get the client details
+                int status = get_client_data_from_sock(sock_index, &list_of_clients, &index);
+                // Log out the client.
+                list_of_clients[index].status = 0;
+                // Delete all the state of the client.
+                list_of_clients.erase(list_of_clients.begin() + index);
               } else {
                 // Not a valid command.
               }

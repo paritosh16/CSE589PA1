@@ -245,8 +245,13 @@ int client_starter_function(int argc, char **argv)
 								is_logged_in = false;
 							}
 							fflush(stdout);
-						} else if(strcmp(command, EXIT_COMMAND) == 0){
 						// Check for the EXIT command.
+						} else if(strcmp(command, EXIT_COMMAND) == 0){
+							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
+								printf("Done!\n");
+								exit(0);
+							}
+							fflush(stdout);
 						} else {
 						// TODO: This is the wrong command. Need to check with the requorements to see if any exception has to ber raised for the auto grader.
 						}
