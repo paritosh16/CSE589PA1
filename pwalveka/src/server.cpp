@@ -212,8 +212,9 @@ int server_starter_function(int argc, char **argv)
                     cse4589_print_and_log(result_string);
                     fflush(stdout);
                   }
+            // Check for the logout command. 
             } else {
-            // TODO: This is the wrong command. Need to check with the requorements to see if any exception has to ber raised for the auto grader.
+              // TODO: This is the wrong command. Need to check with the requorements to see if any exception has to ber raised for the auto grader.
             }
             free(cmd);
           }
@@ -244,7 +245,6 @@ int server_starter_function(int argc, char **argv)
           }
           /* Read from existing clients */
           else{
-            printf("Reading from existing client.");
             /* Initialize buffer to receieve response */
             char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
             memset(buffer, '\0', BUFFER_SIZE);
@@ -278,6 +278,11 @@ int server_starter_function(int argc, char **argv)
             // Check for LOGOUT command.
             } else if(strcmp(command, LOGOUT_COMMAND)) {
               // Logic for logout command.
+              int index;
+              // Get the client details
+              int status = get_client_data_from_sock(sock_index, &list_of_clients, &index);
+              // Log out the client.
+              list_of_clients[index].status = 0;
             } else {
               // Not a valid command.
             }

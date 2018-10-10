@@ -28,5 +28,6 @@ int print_client_data_vector(std::vector<client_data>* client_details);
 bool comparator_client_data_port(const client_data &record_a, const client_data &record_b);
 int print_statistics(std::vector<client_data>* client_details);
 int decode_client_status(int status, char* decoded_status);
+int get_client_data_from_sock(int sock_desc, std::vector<client_data>* list_of_clients, int* index);
 
 #endif

@@ -66,6 +66,9 @@ int client_starter_function(int argc, char **argv)
 	// Maintain the list of all the clients.
 	std::vector<client_data> all_clients;
 
+	// Boolean to keep a track of whether the client is logged in or not.
+	bool is_logged_in = false;
+
 	/*Init. Logger*/
 	cse4589_init_log(argv[2]);
 
@@ -194,7 +197,7 @@ int client_starter_function(int argc, char **argv)
 							printf("I got: %s(size:%d chars)\n", command_to_send, strlen(command_to_send));
 
 							printf("\nSENDing it to the remote server ... \n");
-							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command))
+							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
 									printf("Done!\n");
 							fflush(stdout);
 
@@ -202,18 +205,19 @@ int client_starter_function(int argc, char **argv)
 							char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
 							memset(buffer, '\0', BUFFER_SIZE);
 
-							printf("Just before recieve: ");
 							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
 								int deserialize_status = deserialize_client_data(&all_clients, buffer);
-								// printf("Server responded:\n");
-								//print_client_data_vector(&all_clients);
+								is_logged_in = true;
+								// TODO: Print out the buffered messages here.
+								strcpy(result_string, "[LOGIN:SUCCESS]\n[LOGIN:END]\n");
+								cse4589_print_and_log(result_string);
 								fflush(stdout);
 							}
 						} else if(strcmp(command, REFRESH_COMMAND) == 0){
 						// Check for the REFRESH command.
 						} else if(strcmp(command, SEND_COMMAND) == 0){
 						// Check for the SEND command.
-							if(send(server, cmd, strlen(cmd), 0) == strlen(cmd))
+							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
 								printf("Done!\n");
 							fflush(stdout);
 						} else if(strcmp(command, LIST_COMMAND) == 0) {
@@ -233,10 +237,13 @@ int client_starter_function(int argc, char **argv)
 						// Check for the BLOCK command.
 						} else if(strcmp(command, UNBLOCK_COMMAND) == 0){
 						// Check for the UNBLOCK command.
-						} else if(strcmp(command, BLOCKED_COMMAND) == 0){
-						// Check for the BLOCKED command.
 						} else if(strcmp(command, LOGOUT_COMMAND)== 0){
 						// Check for the LOGOUT command.
+							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
+								printf("Done!\n");
+								is_logged_in = false;
+							}
+							fflush(stdout);
 						} else if(strcmp(command, EXIT_COMMAND) == 0){
 						// Check for the EXIT command.
 						} else {
