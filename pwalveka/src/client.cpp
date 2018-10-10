@@ -211,8 +211,8 @@ int client_starter_function(int argc, char **argv)
 								// TODO: Print out the buffered messages here.
 								strcpy(result_string, "[LOGIN:SUCCESS]\n[LOGIN:END]\n");
 								cse4589_print_and_log(result_string);
-								fflush(stdout);
 							}
+							fflush(stdout);
 						} else if(strcmp(command, REFRESH_COMMAND) == 0){
 						// Check for the REFRESH command.
 						} else if(strcmp(command, SEND_COMMAND) == 0){

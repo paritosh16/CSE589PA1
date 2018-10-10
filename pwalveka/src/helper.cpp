@@ -94,7 +94,6 @@ int deserialize_client_data(std::vector<client_data>* client_data, char* seriali
     temp_data.status = atoi(item);
     (*client_data).push_back(temp_data);
   }
-  printf("Deserialization done.");
   return 0;
 }
 
