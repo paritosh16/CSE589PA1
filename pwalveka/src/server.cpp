@@ -212,7 +212,24 @@ int server_starter_function(int argc, char **argv)
               }
               strcpy(result_string, "[STATISTICS:END]\n");
 							cse4589_print_and_log(result_string);
-            // Check for the logout command. 
+            // Check for the STATISTICS command. 
+            } else if(strcmp(cmd, LIST_COMMAND)== 0) {
+            // Check for the LIST command.
+							strcpy(result_string, "[LIST:SUCCESS]\n");
+							cse4589_print_and_log(result_string);
+							std::sort(list_of_clients.begin(), list_of_clients.end(), comparator_client_data_port);
+							int size = static_cast<int>(list_of_clients.size());
+							for(int i=0; i < size; i++) {
+								int sr_no = i + 1;
+								char result_string[100];
+								if(list_of_clients[i].status == 1) {
+									sprintf(result_string, "%-5d%-35s%-20s%-8d\n", sr_no, list_of_clients[i].client_name, list_of_clients[i].client_ip_address, list_of_clients[i].client_port);
+									cse4589_print_and_log(result_string);
+								}
+								fflush(stdout);
+							}	
+							strcpy(result_string, "[LIST:END]\n");
+							cse4589_print_and_log(result_string);	              
             } else {
               // TODO: This is the wrong command. Need to check with the requorements to see if any exception has to ber raised for the auto grader.
             }
