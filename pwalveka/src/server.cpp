@@ -287,8 +287,13 @@ int server_starter_function(int argc, char **argv)
                 int status = get_client_data_from_sock(sock_index, &list_of_clients, &index);
                 // Log out the client.
                 list_of_clients[index].status = 0;
+                char* logout_response = "LOGOUT";
+                // Send confirmation back to client.
+                if(send(sock_index, logout_response, strlen(logout_response), 0) == strlen(logout_response))
+                  printf("LOGOUT done!\n");
+                fflush(stdout);
               } else if (strcmp(command, EXIT_COMMAND) == 0) {
-                // Check for EXIT command.
+              // Check for EXIT command.
                 int index;
                 // Get the client details
                 int status = get_client_data_from_sock(sock_index, &list_of_clients, &index);
@@ -296,12 +301,28 @@ int server_starter_function(int argc, char **argv)
                 list_of_clients[index].status = 0;
                 // Delete all the state of the client.
                 list_of_clients.erase(list_of_clients.begin() + index);
+                // EXIT confirmation.
+                char* exit_response = "EXIT";
+                if(send(sock_index, exit_response, strlen(exit_response), 0) == strlen(exit_response))
+                  printf("EXIT done!.\n");
+                fflush(stdout);
+              } else if(strcmp(command, REFRESH_COMMAND) == 0) {
+              // Check for REFRESH command.
+                int index;
+                // Get the client details
+                int status = get_client_data_from_sock(sock_index, &list_of_clients, &index);
+                // Serialize the data.
+                char *serialized_data = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+                int serialize_status = serialize_client_data(&list_of_clients, serialized_data);
+                if(send(sock_index, serialized_data, BUFFER_SIZE, 0) == BUFFER_SIZE)
+                  printf("REFRESH done!\n");
+                fflush(stdout);
               } else {
                 // Not a valid command.
+                if(send(sock_index, buffer, strlen(buffer), 0) == strlen(buffer))
+                  printf("Not a valid command. Please read the manual.\n");
+                fflush(stdout);
               }
-              if(send(sock_index, buffer, strlen(buffer), 0) == strlen(buffer))
-                printf("Done!\n");
-              fflush(stdout);
             }
             free(buffer);            
             // char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);

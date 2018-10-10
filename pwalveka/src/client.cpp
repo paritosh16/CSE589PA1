@@ -215,6 +215,21 @@ int client_starter_function(int argc, char **argv)
 							fflush(stdout);
 						} else if(strcmp(command, REFRESH_COMMAND) == 0){
 						// Check for the REFRESH command.
+							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
+								printf("Done!\n");
+							}
+
+							/* Initialize buffer to receieve response */
+							char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+							memset(buffer, '\0', BUFFER_SIZE);
+
+							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
+								all_clients.erase(all_clients.begin() + all_clients.size() - 1);
+								int deserialize_status = deserialize_client_data(&all_clients, buffer);
+								strcpy(result_string, "[REFRESH:SUCCESS]\n[REFRESH:END]\n");
+								cse4589_print_and_log(result_string);
+							}
+							fflush(stdout);
 						} else if(strcmp(command, SEND_COMMAND) == 0){
 						// Check for the SEND command.
 							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
@@ -251,7 +266,6 @@ int client_starter_function(int argc, char **argv)
 								is_logged_in = false;
 							}
 							fflush(stdout);
-						
 						} else if(strcmp(command, EXIT_COMMAND) == 0){
 						// Check for the EXIT command.
 							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
@@ -270,7 +284,6 @@ int client_starter_function(int argc, char **argv)
 
 							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
 								printf("Server responded:%s\n", buffer);
-								//print_client_data_vector(&all_clients);
 								fflush(stdout);
 							}
 					}
