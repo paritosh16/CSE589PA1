@@ -120,7 +120,8 @@ int client_starter_function(int argc, char **argv)
 						// Get rid of the newline character if there is one.
 						int len = strlen(cmd); //where buff is your char array fgets is using
 						if(cmd[len-1]=='\n')
-								cmd[len-1]= NULL;
+								cmd[len-1] = NULL;
+								command_to_send[len-1] = NULL;
 						
 						// The array that holds the tokenized client command.
 						std::vector<char*> tokenized_command;
