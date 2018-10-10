@@ -280,10 +280,10 @@ int server_starter_function(int argc, char **argv)
               } else if (strcmp(command, SEND_COMMAND) == 0) {
                 // Logic for send command.
               // Check for BROADCAST command.
-              } else if(strcmp(command, BROADCAST_COMMAND)) {
+              } else if(strcmp(command, BROADCAST_COMMAND) == 0) {
                 // Logic for BROADCAST command.
               // Check for LOGOUT command.
-              } else if(strcmp(command, LOGOUT_COMMAND)) {
+              } else if(strcmp(command, LOGOUT_COMMAND) == 0) {
                 // Logic for logout command.
                 int index;
                 // Get the client details
