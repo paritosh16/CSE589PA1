@@ -195,6 +195,7 @@ int client_starter_function(int argc, char **argv)
 								if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
 									all_clients.clear();
 									int deserialize_status = deserialize_client_data(&all_clients, buffer);
+									is_logged_in = true;
 									strcpy(result_string, "[LOGIN:SUCCESS]\n[LOGIN:END]\n");
 									cse4589_print_and_log(result_string);
 								}
@@ -218,9 +219,9 @@ int client_starter_function(int argc, char **argv)
 								printf("I got: %s(size:%d chars)\n", command_to_send, strlen(command_to_send));
 
 								printf("\nSENDing it to the remote server ... \n");
-								if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
-										printf("Done!\n");
-								fflush(stdout);
+								// if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
+								// 		printf("Done!\n");
+								// fflush(stdout);
 
 								/* Initialize buffer to receieve response */
 								char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
@@ -228,12 +229,11 @@ int client_starter_function(int argc, char **argv)
 
 								if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
 									int deserialize_status = deserialize_client_data(&all_clients, buffer);
-									is_logged_in = true;
 									// TODO: Print out the buffered messages here.
+									is_logged_in = true;
 									strcpy(result_string, "[LOGIN:SUCCESS]\n[LOGIN:END]\n");
 									cse4589_print_and_log(result_string);
 								}
-								printf("Last line of login.\n");
 								fflush(stdout);							
 							}
 						} else if(strcmp(command, REFRESH_COMMAND) == 0){
@@ -292,7 +292,6 @@ int client_starter_function(int argc, char **argv)
 							memset(buffer, '\0', BUFFER_SIZE);
 
 							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
-								is_logged_in = false;
 								strcpy(result_string, "[LOGOUT:SUCCESS]\n[LOGOUT:END]\n");
 								cse4589_print_and_log(result_string);
 							}
@@ -317,6 +316,8 @@ int client_starter_function(int argc, char **argv)
 						} else {
 						// TODO: This is the wrong command. Need to check with the requorements to see if any exception has to ber raised for the auto grader.
 						}
+						free(command_to_send);
+						free(cmd);
 					} else {
 						// Receive from socket.
 						/* Initialize buffer to receieve response */
