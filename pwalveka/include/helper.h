@@ -2,7 +2,6 @@
 #define HELPER_H_
 
 #include <vector>
-#include <set>
 
 /* Struct that mantains information for all the clients that 
   login to the server
@@ -17,7 +16,6 @@ struct client_data{
   int message_sent;
   int message_recieved;
   int status;
-  std::set<char*> block_list;
 };
 
 int author_command(char *result_string);
@@ -31,5 +29,5 @@ bool comparator_client_data_port(const client_data &record_a, const client_data 
 int print_statistics(std::vector<client_data>* client_details);
 int decode_client_status(int status, char* decoded_status);
 int get_client_data_from_sock(int sock_desc, std::vector<client_data>* list_of_clients, int* index);
-int get_client_data_from_ip(char ip_address[100], std::vector<client_data>* list_of_clients, int* index);
+int get_client_data_from_ip(const char ip_address[100], std::vector<client_data>* list_of_clients, int* index);
 #endif

@@ -33,6 +33,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <algorithm>
+#include <map>
 
 #include "../include/server.h"
 #include "../include/logger.h"
@@ -76,6 +77,9 @@ int server_starter_function(int argc, char **argv)
 
   /* Data Structure for client*/
   std::vector<client_data> list_of_clients;
+
+  /* Block list.*/
+  std::map<std::string , std::vector<std::string> > block_list;
 
    /* Function that populates the IP address of the machine*/
   int res = ip_command(device_hostname,device_ip_address);
@@ -236,7 +240,7 @@ int server_starter_function(int argc, char **argv)
 							for(int i=0; i < size; i++) {
 								char result_string[100];
 								if(list_of_clients[i].status == 1) {
-									sprintf(result_string, "%-5d%-35s%-20s%-8d\n", sr_no, list_of_clients[i].client_name, list_of_clients[i].client_ip_address, list_of_clients[i].client_port);
+									sprintf(result_string, "%-5d%-35s%-20s%-8d\n", sr_no, list_of_clients[i].client_name,list_of_clients[i].client_ip_address, list_of_clients[i].client_port);
 									cse4589_print_and_log(result_string);
                   sr_no++;
 								}
@@ -245,34 +249,22 @@ int server_starter_function(int argc, char **argv)
 							strcpy(result_string, "[LIST:END]\n");
 							cse4589_print_and_log(result_string);	              
             } else if(strcmp(command, BLOCKED_COMMAND) == 0) {
-              // Check for UNBLOCKED command.
-                int index = 0;
+            // Check for the blocked command.
+              strcpy(result_string, "[BLOCKED:SUCCESS]\n");
+							cse4589_print_and_log(result_string);
+              int sr_no = 1;
+              for(int i = 0; i < block_list[tokenized_command[1]].size(); i++) {
+                int index;
                 // Get the client details
-                printf("%s\n", tokenized_command[1]);
-                int status = get_client_data_from_ip(tokenized_command[1], &list_of_clients, &index);
-                if (status == 0){
-                  std::set<char*>::iterator it;
-                  int sr_no = 1;
-                  for (it = list_of_clients[index].block_list.begin(); it != list_of_clients[index].block_list.end(); ++it)
-                  {
-                    char* ip_address = *it;
-                    int client_index;
-                    int status = get_client_data_from_ip(ip_address, &list_of_clients, &client_index);
-                    sprintf(result_string, "%-5d%-35s%-20s%-8d\n", sr_no, list_of_clients[client_index].client_name, list_of_clients[client_index].client_ip_address, list_of_clients[client_index].client_port);
-                    cse4589_print_and_log(result_string);
-                    sr_no++;
-                  }
-                  strcpy(result_string, "[BLOCKED:END]\n");
-							    cse4589_print_and_log(result_string);
-                } else {
-                  // No such client.
-                  strcpy(result_string, "[BLOCKED:SUCCESS]\n");
-							    cse4589_print_and_log(result_string);
-                  strcpy(result_string, "[BLOCKED:END]\n");
-							    cse4589_print_and_log(result_string);
-                }
-                fflush(stdout);
-              } else {
+                int status = get_client_data_from_ip(block_list[tokenized_command[1]].at(i).c_str(), &list_of_clients, &index);
+                sprintf(result_string, "%-5d%-35s%-20s%-8d\n", sr_no, list_of_clients[index].client_name,list_of_clients[index].client_ip_address, list_of_clients[index].client_port);
+									cse4589_print_and_log(result_string);
+                  sr_no++;
+              }
+              strcpy(result_string, "[BLOCKED:END]\n");
+							cse4589_print_and_log(result_string);
+              fflush(stdout);
+            } else {
               // TODO: This is the wrong command. Need to check with the requorements to see if any exception has to ber raised for the auto grader.
             }
             free(cmd);
@@ -380,24 +372,36 @@ int server_starter_function(int argc, char **argv)
               } else if(strcmp(command, BLOCK_COMMAND) == 0) {
               // Check for BLOCK command.
                 int index;
+                char *ip_address;
+                strcpy(ip_address, tokenized_command[1]);
                 // Get the client details
                 int status = get_client_data_from_sock(sock_index, &list_of_clients, &index);
-                list_of_clients[index].block_list.insert(tokenized_command[1]);
+                // Check if key is present in the map.
+                if (block_list.find(list_of_clients[index].client_ip_address) != block_list.end()) {
+                  // Contains the key.
+                  block_list[list_of_clients[index].client_ip_address].push_back(std::string(tokenized_command[1]));
+                } else {
+                  // First ever block operation, need to create a key.
+                  block_list[list_of_clients[index].client_ip_address] = std::vector<std::string>();
+                  block_list[list_of_clients[index].client_ip_address].push_back(std::string(tokenized_command[1]));
+                }
                 char* block_response = "BLOCK";
                 if(send(sock_index, block_response, strlen(block_response), 0) == strlen(block_response))
                   printf("BLOCK done!\n");
                 fflush(stdout);
               } else if(strcmp(command, UNBLOCK_COMMAND) == 0) {
               // Check for UNBLOCK command.
-                int index;
+                int index, ip_deletion_index;
                 // Get the client details
                 int status = get_client_data_from_sock(sock_index, &list_of_clients, &index);
-                std::set<char*>::iterator iterator = list_of_clients[index].block_list.find(tokenized_command[1]);
-                if (iterator != list_of_clients[index].block_list.end()) {
-                  list_of_clients[index].block_list.erase(iterator);
-                } else {
-                  list_of_clients[index].block_list.clear();
-                }
+                int ip_to_delete;
+                // for (int i = 0; i < list_of_clients[index].block_list.size(); i++) {
+                //   if(strcmp(list_of_clients[index].block_list[i], tokenized_command[1])) {
+                //     ip_deletion_index = i;
+                //     break;
+                //   }
+                // }
+                // list_of_clients[index].block_list.erase(list_of_clients[index].block_list.begin() + ip_deletion_index);
                 char* block_response = "UNBLOCK";
                 if(send(sock_index, block_response, strlen(block_response), 0) == strlen(block_response))
                   printf("UNBLOCK done!\n");
