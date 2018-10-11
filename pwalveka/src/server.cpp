@@ -268,8 +268,6 @@ int server_starter_function(int argc, char **argv)
               }
             }
             
-          }
-            }
             fflush(stdout);
           } else {
           /* Read from existing clients */
