@@ -336,6 +336,27 @@ int server_starter_function(int argc, char **argv)
                 if(send(sock_index, serialized_data, BUFFER_SIZE, 0) == BUFFER_SIZE)
                   printf("REFRESH done!\n");
                 fflush(stdout);
+              } else if(strcmp(command, BLOCK_COMMAND) == 0) {
+              // Check for BLOCK command.
+                int index;
+                // Get the client details
+                int status = get_client_data_from_sock(sock_index, &list_of_clients, &index);
+                list_of_clients[index].block_list.insert(tokenized_command[1]);
+                char* block_response = "BLOCK";
+                if(send(sock_index, block_response, strlen(block_response), 0) == strlen(block_response))
+                  printf("UNBLOCK done!\n");
+                fflush(stdout);
+              } else if(strcmp(command, UNBLOCK_COMMAND) == 0) {
+              // Check for UNBLOCK command.
+                int index;
+                // Get the client details
+                int status = get_client_data_from_sock(sock_index, &list_of_clients, &index);
+                list_of_clients[index].block_list.erase(list_of_clients[index].block_list.find(tokenized_command[1]));
+                char* block_response = "UNBLOCK";
+                if(send(sock_index, block_response, strlen(block_response), 0) == strlen(block_response))
+                  printf("UNBLOCK done!\n");
+                fflush(stdout);
+              } else if(strcmp(command, BLOCK_COMMAND)) {
               } else {
                 // Not a valid command.
                 if(send(sock_index, buffer, strlen(buffer), 0) == strlen(buffer))

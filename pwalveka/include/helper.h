@@ -2,6 +2,7 @@
 #define HELPER_H_
 
 #include <vector>
+#include <set>
 
 /* Struct that mantains information for all the clients that 
   login to the server
@@ -16,6 +17,7 @@ struct client_data{
   int message_sent;
   int message_recieved;
   int status;
+  std::set<char*> block_list;
 };
 
 int author_command(char *result_string);
