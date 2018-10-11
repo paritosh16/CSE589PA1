@@ -241,7 +241,9 @@ int server_starter_function(int argc, char **argv)
                 printf("The message is : %s\n",buffered_messages[i].buffered_message);
                 if (strcmp(buffered_messages[i].client_recieving_ip_address,new_client.client_ip_address) == 0)
                 {
-                  printf("Matching it with the new client %s\n", new_client.client_ip_address);
+                  printf("The pending messages of the new client  is:%s\n", buffered_messages[i].buffered_message);
+                  send(new_client.sock_decriptor, buffered_messages[i].buffered_message, BUFFER_SIZE, 0); 
+                  buffered_messages.erase(buffered_messages.begin() + i);
                 }
 
               }
