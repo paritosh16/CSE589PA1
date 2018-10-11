@@ -308,7 +308,15 @@ int server_starter_function(int argc, char **argv)
                 }
               } else if(strcmp(command, BROADCAST_COMMAND) == 0) {
               // Check for BROADCAST command.
-                // Logic for BROADCAST command.
+                printf("Recieved Broadcast\n");
+                for(int i = 0; i < list_of_clients.size();i++)
+                {
+                  if(send(list_of_clients[i].sock_decriptor, tokenized_command[1], strlen(tokenized_command[1]), 0) == strlen(tokenized_command[1]))
+                  {
+                    printf("Done sending to %s\n",list_of_clients[i].client_name);
+                  }
+                }
+
               } else if(strcmp(command, LOGOUT_COMMAND) == 0) {
               // Check for LOGOUT command.
                 int index;
