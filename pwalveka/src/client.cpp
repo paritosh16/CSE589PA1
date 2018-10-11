@@ -57,7 +57,7 @@ int client_starter_function(int argc, char **argv)
 		exit(-1);
 	}
 	
-	int head_socket, selret, server, sock_index = 0;
+	int head_socket, selret, server, sock_index = 0,tokenize_status;
 	fd_set master_list, watch_list;
 
 	// Grab the port number that the client will listen for incoming connections on.
@@ -66,6 +66,8 @@ int client_starter_function(int argc, char **argv)
 	// Maintain the list of all the clients.
 	std::vector<client_data> all_clients;
 
+	// vector representing the input from the server
+	std::vector<char*> server_response;
 	// Boolean to keep a track of whether the client is logged in or not.
 	bool is_logged_in = false;
 
@@ -326,8 +328,18 @@ int client_starter_function(int argc, char **argv)
 							char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
 							memset(buffer, '\0', BUFFER_SIZE);
 
+
 							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
 								printf("Server responded:%s\n", buffer);
+              					tokenize_status = tokenize_command(&server_response, buffer);
+              					printf("msg from:%s\n[msg]:%s\n", server_response[0], server_response[1]);
+								sprintf(result_string, "[RECEIVED:SUCCESS]\n");
+							    cse4589_print_and_log(result_string);
+							    sprintf(result_string,"msg from:%s\n[msg]:%s\n", server_response[0], server_response[1]);
+							    cse4589_print_and_log(result_string);
+							    sprintf(result_string, "\n[RECEIVED:END]\n");
+							    cse4589_print_and_log(result_string);
+
 								fflush(stdout);
 							}
 					}

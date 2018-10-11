@@ -67,12 +67,13 @@ int server_starter_function(int argc, char **argv)
   /*Init. Logger*/
 	cse4589_init_log(argv[2]);
 
-  int port, server_socket, head_socket, selret, sock_index, fdaccept=0;
+  int port, server_socket, head_socket, selret, sock_index, fdaccept=0,search_status,send_result,sending_client_index;
   struct sockaddr_in server_addr, client_addr;
   fd_set master_list, watch_list;
   socklen_t caddr_len;
   char device_hostname[100];
   char device_ip_address[100];
+  char result_string[100];
 
   /* Data Structure for client*/
   std::vector<client_data> list_of_clients;
@@ -261,7 +262,8 @@ int server_starter_function(int argc, char **argv)
                 if (strcmp(buffered_messages[i].client_recieving_ip_address,new_client.client_ip_address) == 0)
                 {
                   printf("The pending messages of the new client  is:%s\n", buffered_messages[i].buffered_message);
-                  send(new_client.sock_decriptor, buffered_messages[i].buffered_message, BUFFER_SIZE, 0); 
+                  //send(new_client.sock_decriptor, buffered_messages[i].buffered_message, BUFFER_SIZE, 0); 
+                  send_result = send_message_to_client(new_client.sock_decriptor,new_client.client_ip_address,buffered_messages[i].client_send_ip_address,buffered_messages[i].buffered_message,result_string);
                   buffered_messages.erase(buffered_messages.begin() + i);
                 }
 
@@ -314,18 +316,19 @@ int server_starter_function(int argc, char **argv)
                 fflush(stdout);
               } else if (strcmp(command, SEND_COMMAND) == 0) {
               // Check for the SEND command.
-                printf("Got a send command\n");
                 int socket_to_send = search_client(tokenized_command[1],list_of_clients);
                 if (socket_to_send > 0)
                 {
-                  if(send(socket_to_send, tokenized_command[2], strlen(tokenized_command[2]), 0) == strlen(tokenized_command[2]))
-                    printf("Transmitted to client!\n");  
+
+                  search_status = get_client_data_from_sock(sock_index, &list_of_clients, &sending_client_index); 
+                  send_result = send_message_to_client(socket_to_send,list_of_clients[sending_client_index].client_ip_address,tokenized_command[1],tokenized_command[2],result_string);
+                   
                 }
                 else
                 {
                   /*Case to cache the stuff in the buffer */
-                  int sending_client_index = 0;
-                  int status = get_client_data_from_sock(sock_index, &list_of_clients, &sending_client_index); 
+                  sending_client_index = 0;
+                  search_status = get_client_data_from_sock(sock_index, &list_of_clients, &sending_client_index); 
                   buffered_data new_message;
                   strcpy(new_message.client_send_ip_address,list_of_clients[sending_client_index].client_ip_address);
                   strcpy(new_message.client_recieving_ip_address,tokenized_command[1]);
@@ -464,3 +467,30 @@ int search_client(char *client_ip_address,std::vector<client_data>& list_of_clie
 }
 
 
+/* Function that sends message to a client*/
+int send_message_to_client(int socket_to_send,char *from_client_ip,char *to_client_ip,char *message,char *result_string)
+{
+  std::string transmit_string = std::string("");
+  transmit_string.append(from_client_ip);
+  transmit_string.append(std::string(" "));
+  transmit_string.append(message);
+  char transmitting_string[BUFFER_SIZE] ;
+  strcpy(transmitting_string, transmit_string.c_str());
+  if(send(socket_to_send, transmitting_string, strlen(transmitting_string), 0) == strlen(transmitting_string))
+  {
+    printf("Transmitted to client!\n");  
+    printf("msg from:%s, to:%s\n[msg]:%s\n", from_client_ip, to_client_ip, message);
+    sprintf(result_string, "[RELAYED:SUCCESS]\n");
+    cse4589_print_and_log(result_string);
+    sprintf(result_string,"msg from:%s, to:%s\n[msg]:%s\n", from_client_ip, to_client_ip, message);
+    cse4589_print_and_log(result_string);
+    sprintf(result_string, "\n[RELAYED:END]\n");
+    cse4589_print_and_log(result_string);
+
+    /* Update the statstics*/
+
+    return 1;
+  }
+
+  return -1;
+}
