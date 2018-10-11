@@ -31,5 +31,5 @@ bool comparator_client_data_port(const client_data &record_a, const client_data 
 int print_statistics(std::vector<client_data>* client_details);
 int decode_client_status(int status, char* decoded_status);
 int get_client_data_from_sock(int sock_desc, std::vector<client_data>* list_of_clients, int* index);
-
+int get_client_data_from_ip(char ip_address[100], std::vector<client_data>* list_of_clients, int* index);
 #endif

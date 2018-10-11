@@ -157,3 +157,16 @@ int get_client_data_from_sock(int sock_desc, std::vector<client_data>* list_of_c
   }
   return 0;
 }
+
+/* Given the ip address, find the index of the client in the vector of all clients. */
+int get_client_data_from_ip(char ip_address[100], std::vector<client_data>* list_of_clients, int* index) {
+  int size = static_cast<int>((*list_of_clients).size());
+  for (int i = 0; i < size; i++) {
+    if(strcmp(ip_address, (*list_of_clients)[i].client_ip_address) == 0) {
+      // Got the client.
+      *index = i;
+      break;
+    }
+  }
+  return 0;
+}

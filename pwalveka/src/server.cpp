@@ -149,6 +149,19 @@ int server_starter_function(int argc, char **argv)
             if(cmd[len-1]=='\n')
                 cmd[len-1]='\0';
 
+            // The array that holds the tokenized client command.
+              std::vector<char*> tokenized_command;
+                      
+            // Tokenize the command.
+            int tokenize_status = tokenize_command(&tokenized_command, buffer);
+            if(tokenize_status) {
+              // Some error occured. 
+              exit(1);
+            }
+
+            // Get the command from the vector.
+            const char* command = tokenized_command[0];
+
             //printf("\nI got: %s\n", cmd);
             //Process PA1 commands here ...
             if (strcmp(cmd, AUTHOR_COMMAND) == 0) {
@@ -231,7 +244,24 @@ int server_starter_function(int argc, char **argv)
 							}	
 							strcpy(result_string, "[LIST:END]\n");
 							cse4589_print_and_log(result_string);	              
-            } else {
+            } else if(strcmp(command, BLOCKED_COMMAND)) {
+              // Check for UNBLOCKED command.
+                int index;
+                // Get the client details
+                int status = get_client_data_from_ip(tokenized_command[1], &list_of_clients, &index);
+                std::set<char*>::iterator it;
+                int sr_no = 1;
+                for (it = list_of_clients[index].block_list.begin(); it != list_of_clients[index].block_list.end(); ++it)
+                {
+                  char* ip_address = *it;
+                  int client_index;
+                  int status = get_client_data_from_ip(ip_address, &list_of_clients, &client_index);
+                  sprintf(result_string, "%-5d%-35s%-20s%-8d\n", sr_no, list_of_clients[client_index].client_name, list_of_clients[client_index].client_ip_address, list_of_clients[client_index].client_port);
+									cse4589_print_and_log(result_string);
+									sr_no++;
+                }
+                fflush(stdout);
+              } else {
               // TODO: This is the wrong command. Need to check with the requorements to see if any exception has to ber raised for the auto grader.
             }
             free(cmd);
@@ -344,19 +374,23 @@ int server_starter_function(int argc, char **argv)
                 list_of_clients[index].block_list.insert(tokenized_command[1]);
                 char* block_response = "BLOCK";
                 if(send(sock_index, block_response, strlen(block_response), 0) == strlen(block_response))
-                  printf("UNBLOCK done!\n");
+                  printf("BLOCK done!\n");
                 fflush(stdout);
               } else if(strcmp(command, UNBLOCK_COMMAND) == 0) {
               // Check for UNBLOCK command.
                 int index;
                 // Get the client details
                 int status = get_client_data_from_sock(sock_index, &list_of_clients, &index);
-                list_of_clients[index].block_list.erase(list_of_clients[index].block_list.find(tokenized_command[1]));
+                std::set<char*>::iterator iterator = list_of_clients[index].block_list.find(tokenized_command[1]);
+                if (iterator != list_of_clients[index].block_list.end()) {
+                  list_of_clients[index].block_list.erase(iterator);
+                } else {
+                  list_of_clients[index].block_list.clear();
+                }
                 char* block_response = "UNBLOCK";
                 if(send(sock_index, block_response, strlen(block_response), 0) == strlen(block_response))
                   printf("UNBLOCK done!\n");
                 fflush(stdout);
-              } else if(strcmp(command, BLOCK_COMMAND)) {
               } else {
                 // Not a valid command.
                 if(send(sock_index, buffer, strlen(buffer), 0) == strlen(buffer))
