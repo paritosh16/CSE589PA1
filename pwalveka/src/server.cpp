@@ -246,19 +246,30 @@ int server_starter_function(int argc, char **argv)
 							cse4589_print_and_log(result_string);	              
             } else if(strcmp(command, BLOCKED_COMMAND) == 0) {
               // Check for UNBLOCKED command.
-                int index;
+                int index = 0;
                 // Get the client details
+                printf("%s\n", tokenized_command[1]);
                 int status = get_client_data_from_ip(tokenized_command[1], &list_of_clients, &index);
-                std::set<char*>::iterator it;
-                int sr_no = 1;
-                for (it = list_of_clients[index].block_list.begin(); it != list_of_clients[index].block_list.end(); ++it)
-                {
-                  char* ip_address = *it;
-                  int client_index;
-                  int status = get_client_data_from_ip(ip_address, &list_of_clients, &client_index);
-                  sprintf(result_string, "%-5d%-35s%-20s%-8d\n", sr_no, list_of_clients[client_index].client_name, list_of_clients[client_index].client_ip_address, list_of_clients[client_index].client_port);
-									cse4589_print_and_log(result_string);
-									sr_no++;
+                if (status == 0){
+                  std::set<char*>::iterator it;
+                  int sr_no = 1;
+                  for (it = list_of_clients[index].block_list.begin(); it != list_of_clients[index].block_list.end(); ++it)
+                  {
+                    char* ip_address = *it;
+                    int client_index;
+                    int status = get_client_data_from_ip(ip_address, &list_of_clients, &client_index);
+                    sprintf(result_string, "%-5d%-35s%-20s%-8d\n", sr_no, list_of_clients[client_index].client_name, list_of_clients[client_index].client_ip_address, list_of_clients[client_index].client_port);
+                    cse4589_print_and_log(result_string);
+                    sr_no++;
+                  }
+                  strcpy(result_string, "[BLOCKED:END]\n");
+							    cse4589_print_and_log(result_string);
+                } else {
+                  // No such client.
+                  strcpy(result_string, "[BLOCKED:SUCCESS]\n");
+							    cse4589_print_and_log(result_string);
+                  strcpy(result_string, "[BLOCKED:END]\n");
+							    cse4589_print_and_log(result_string);
                 }
                 fflush(stdout);
               } else {

@@ -165,8 +165,8 @@ int get_client_data_from_ip(char ip_address[100], std::vector<client_data>* list
     if(strcmp(ip_address, (*list_of_clients)[i].client_ip_address) == 0) {
       // Got the client.
       *index = i;
-      break;
+      return 0;
     }
   }
-  return 0;
+  return 1;
 }
