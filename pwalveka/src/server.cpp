@@ -372,7 +372,7 @@ int server_starter_function(int argc, char **argv)
               } else if(strcmp(command, BLOCK_COMMAND) == 0) {
               // Check for BLOCK command.
                 int index;
-                char *ip_address;
+                char ip_address[100];
                 strcpy(ip_address, tokenized_command[1]);
                 // Get the client details
                 int status = get_client_data_from_sock(sock_index, &list_of_clients, &index);
