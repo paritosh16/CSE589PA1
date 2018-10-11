@@ -136,9 +136,8 @@ int server_starter_function(int argc, char **argv)
       for(sock_index = 0; sock_index <= head_socket; sock_index += 1){
 
         if(FD_ISSET(sock_index, &watch_list)){
-
-          /* Check if new command on STDIN */
           if (sock_index == STDIN){
+          /* Check if new command on STDIN */
             char *cmd = (char*) malloc(sizeof(char)*CMD_SIZE);
 
           	// The result string that will be printed and logged.
@@ -154,7 +153,6 @@ int server_starter_function(int argc, char **argv)
                 cmd[len-1]='\0';
 
             //printf("\nI got: %s\n", cmd);
-
             //Process PA1 commands here ...
             if (strcmp(cmd, AUTHOR_COMMAND) == 0) {
             // Check for the author command.
@@ -201,26 +199,47 @@ int server_starter_function(int argc, char **argv)
               sprintf(result_string, "\n[%s:END]\n", cmd);
               cse4589_print_and_log(result_string);
             } else if(strcmp(cmd, STATISTICS_COMMAND) == 0) {
-                  char decoded_string[20];
-                  char result_string[100];
-                  int decode_status;
-                  std::sort(list_of_clients.begin(), list_of_clients.end(), comparator_client_data_port);
-                  int size = static_cast<int>(list_of_clients.size());
-                  for(int i=0; i < size; i++) {
-                    int sr_no = i + 1;
-                    decode_status = decode_client_status(list_of_clients[i].status, decoded_string);
-                    sprintf(result_string, "%-5d%-35s%-8d%-8d%-8s\n", sr_no, list_of_clients[i].client_name, list_of_clients[i].message_sent, list_of_clients[i].message_recieved, decoded_string);
-                    cse4589_print_and_log(result_string);
-                    fflush(stdout);
-                  }
-            // Check for the logout command. 
+              strcpy(result_string, "[STATISTICS:SUCCESS]\n");
+							cse4589_print_and_log(result_string);
+              char decoded_string[20];
+              char result_string[100];
+              int decode_status;
+              std::sort(list_of_clients.begin(), list_of_clients.end(), comparator_client_data_port);
+              int size = static_cast<int>(list_of_clients.size());
+              for(int i=0; i < size; i++) {
+                int sr_no = i + 1;
+                decode_status = decode_client_status(list_of_clients[i].status, decoded_string);
+                sprintf(result_string, "%-5d%-35s%-8d%-8d%-8s\n", sr_no, list_of_clients[i].client_name, list_of_clients[i].message_sent, list_of_clients[i].message_recieved, decoded_string);
+                cse4589_print_and_log(result_string);
+                fflush(stdout);
+              }
+              strcpy(result_string, "[STATISTICS:END]\n");
+							cse4589_print_and_log(result_string);
+            // Check for the STATISTICS command. 
+            } else if(strcmp(cmd, LIST_COMMAND)== 0) {
+            // Check for the LIST command.
+							strcpy(result_string, "[LIST:SUCCESS]\n");
+							cse4589_print_and_log(result_string);
+							std::sort(list_of_clients.begin(), list_of_clients.end(), comparator_client_data_port);
+							int size = static_cast<int>(list_of_clients.size());
+              int sr_no = 1;
+							for(int i=0; i < size; i++) {
+								char result_string[100];
+								if(list_of_clients[i].status == 1) {
+									sprintf(result_string, "%-5d%-35s%-20s%-8d\n", sr_no, list_of_clients[i].client_name, list_of_clients[i].client_ip_address, list_of_clients[i].client_port);
+									cse4589_print_and_log(result_string);
+                  sr_no++;
+								}
+								fflush(stdout);
+							}	
+							strcpy(result_string, "[LIST:END]\n");
+							cse4589_print_and_log(result_string);	              
             } else {
               // TODO: This is the wrong command. Need to check with the requorements to see if any exception has to ber raised for the auto grader.
             }
             free(cmd);
-          }
+          } else if (sock_index == server_socket) {
           /* Check if new client is requesting connection */
-          else if(sock_index == server_socket){
             printf("Registering the new client");
             fdaccept = register_client(server_socket,client_addr,master_list,head_socket);
             if (fdaccept > 0)
@@ -250,8 +269,10 @@ int server_starter_function(int argc, char **argv)
             }
             
           }
+            }
+            fflush(stdout);
+          } else {
           /* Read from existing clients */
-          else{
             /* Initialize buffer to receieve response */
             char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
             memset(buffer, '\0', BUFFER_SIZE);
@@ -282,7 +303,17 @@ int server_starter_function(int argc, char **argv)
 
               if(strcmp(command, LOGIN_COMMAND) == 0) {
               // Check for the LOGIN command.
-                // Logic for Login command.
+                int index;
+                // Get the client details
+                int status = get_client_data_from_sock(sock_index, &list_of_clients, &index);
+                // Set the status of client to logged in.
+                list_of_clients[index].status = 1;
+                // Serialize the data.
+                char *serialized_data = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+                int serialize_status = serialize_client_data(&list_of_clients, serialized_data);
+                if(send(sock_index, serialized_data, BUFFER_SIZE, 0) == BUFFER_SIZE)
+                  printf("LOGIN (for already logged-in client) done!\n");
+                fflush(stdout);
               } else if (strcmp(command, SEND_COMMAND) == 0) {
               // Check for the SEND command.
                 printf("Got a send command\n");
