@@ -153,7 +153,7 @@ int server_starter_function(int argc, char **argv)
               std::vector<char*> tokenized_command;
                       
             // Tokenize the command.
-            int tokenize_status = tokenize_command(&tokenized_command, buffer);
+            int tokenize_status = tokenize_command(&tokenized_command, cmd);
             if(tokenize_status) {
               // Some error occured. 
               exit(1);
