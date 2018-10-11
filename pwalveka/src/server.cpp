@@ -77,6 +77,9 @@ int server_starter_function(int argc, char **argv)
   /* Data Structure for client*/
   std::vector<client_data> list_of_clients;
 
+  /*Data Structure to mantain the list of the buffers*/
+  std::vector<buffered_data> buffered_messages;
+
    /* Function that populates the IP address of the machine*/
   int res = ip_command(device_hostname,device_ip_address);
   printf("The Hostname of the device is : %s\n", device_hostname);
@@ -229,17 +232,21 @@ int server_starter_function(int argc, char **argv)
               char *serialized_data = (char*) malloc(sizeof(char)*BUFFER_SIZE);
               int serialize_status = serialize_client_data(&list_of_clients, serialized_data);
               send(new_client.sock_decriptor, serialized_data, BUFFER_SIZE, 0);
+
+              // print the buffer so far
+              for(int i = 0; i < buffered_messages.size();i++)
+              {
+                printf("The client sending ip is : %s\n",buffered_messages[i].client_send_ip_address);
+                printf("The client recieving ip is : %s\n",buffered_messages[i].client_recieving_ip_address);
+                printf("The message is : %s\n",buffered_messages[i].buffered_message);
+                if (strcmp(buffered_messages[i].client_recieving_ip_address,new_client.client_ip_address) == 0)
+                {
+                  printf("Matching it with the new client %s\n", new_client.client_ip_address);
+                }
+
+              }
             }
-            /*caddr_len = sizeof(client_addr);
-            fdaccept = accept(server_socket, (struct sockaddr *)&client_addr, &caddr_len);
-            if(fdaccept < 0)
-              perror("Accept failed.");
-
-            printf("\nRemote Host connected!\n");
-
-            /* Add to watched socket list 
-            FD_SET(fdaccept, &master_list);
-            if(fdaccept > head_socket) head_socket = fdaccept;*/
+            
           }
           /* Read from existing clients */
           else{
@@ -280,13 +287,23 @@ int server_starter_function(int argc, char **argv)
                 int socket_to_send = search_client(tokenized_command[1],list_of_clients);
                 if (socket_to_send > 0)
                 {
-                if(send(socket_to_send, tokenized_command[2], strlen(tokenized_command[2]), 0) == strlen(tokenized_command[2]))
-                  printf("Transmitted to client!\n");  
+                  if(send(socket_to_send, tokenized_command[2], strlen(tokenized_command[2]), 0) == strlen(tokenized_command[2]))
+                    printf("Transmitted to client!\n");  
                 }
                 else
                 {
-                printf("Invalid IP\n");
-}
+                  /*Case to cache the stuff in the buffer */
+                  int sending_client_index = 0;
+                  int status = get_client_data_from_sock(sock_index, &list_of_clients, &sending_client_index); 
+                  buffered_data new_message;
+                  strcpy(new_message.client_send_ip_address,list_of_clients[sending_client_index].client_ip_address);
+                  strcpy(new_message.client_recieving_ip_address,tokenized_command[1]);
+                  strcpy(new_message.buffered_message,tokenized_command[2]);
+                  buffered_messages.push_back(new_message);
+                  printf("Added the new message to the buffer\n");
+                  printf("Buffer size is : %d\n",buffered_messages.size() );
+
+                }
               } else if(strcmp(command, BROADCAST_COMMAND) == 0) {
               // Check for BROADCAST command.
                 // Logic for BROADCAST command.
@@ -406,3 +423,5 @@ int search_client(char *client_ip_address,std::vector<client_data>& list_of_clie
 
   return -1;
 }
+
+

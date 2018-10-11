@@ -18,6 +18,13 @@ struct client_data{
   int status;
 };
 
+/* Struct that mantains info for all the info for all the buffer data on the server*/
+struct buffered_data{
+  char client_send_ip_address[100];
+  char client_recieving_ip_address[100];
+  char buffered_message[256];
+};
+
 int author_command(char *result_string);
 int ip_command(char *device_hostname, char *device_ip_address);
 int tokenize_command(std::vector<char*>* tokenized_command, char* cmd);
