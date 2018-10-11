@@ -150,7 +150,7 @@ int server_starter_function(int argc, char **argv)
                 cmd[len-1]='\0';
 
             // The array that holds the tokenized client command.
-              std::vector<char*> tokenized_command;
+            std::vector<char*> tokenized_command;
                       
             // Tokenize the command.
             int tokenize_status = tokenize_command(&tokenized_command, cmd);
@@ -244,7 +244,7 @@ int server_starter_function(int argc, char **argv)
 							}	
 							strcpy(result_string, "[LIST:END]\n");
 							cse4589_print_and_log(result_string);	              
-            } else if(strcmp(command, BLOCKED_COMMAND)) {
+            } else if(strcmp(command, BLOCKED_COMMAND) == 0) {
               // Check for UNBLOCKED command.
                 int index;
                 // Get the client details
