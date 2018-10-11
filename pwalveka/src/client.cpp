@@ -200,7 +200,6 @@ int client_starter_function(int argc, char **argv)
 									cse4589_print_and_log(result_string);
 								}
 								fflush(stdout);
-
 							} else {
 							// Need to create a socket as this is the very first time that the client is logging in.
 								char* server_ip = tokenized_command[1];
@@ -256,7 +255,7 @@ int client_starter_function(int argc, char **argv)
 						} else if(strcmp(command, SEND_COMMAND) == 0){
 						// Check for the SEND command.
 							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
-								printf("Done!\n");
+								printf("Done senfing it to the server\n");
 							fflush(stdout);
 						} else if(strcmp(command, LIST_COMMAND) == 0) {
 						// Check for the LIST command.

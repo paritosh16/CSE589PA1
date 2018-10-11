@@ -77,6 +77,9 @@ int server_starter_function(int argc, char **argv)
   /* Data Structure for client*/
   std::vector<client_data> list_of_clients;
 
+  /*Data Structure to mantain the list of the buffers*/
+  std::vector<buffered_data> buffered_messages;
+
    /* Function that populates the IP address of the machine*/
   int res = ip_command(device_hostname,device_ip_address);
   printf("The Hostname of the device is : %s\n", device_hostname);
@@ -248,6 +251,24 @@ int server_starter_function(int argc, char **argv)
               char *serialized_data = (char*) malloc(sizeof(char)*BUFFER_SIZE);
               int serialize_status = serialize_client_data(&list_of_clients, serialized_data);
               send(new_client.sock_decriptor, serialized_data, BUFFER_SIZE, 0);
+
+              // print the buffer so far
+              for(int i = 0; i < buffered_messages.size();i++)
+              {
+                printf("The client sending ip is : %s\n",buffered_messages[i].client_send_ip_address);
+                printf("The client recieving ip is : %s\n",buffered_messages[i].client_recieving_ip_address);
+                printf("The message is : %s\n",buffered_messages[i].buffered_message);
+                if (strcmp(buffered_messages[i].client_recieving_ip_address,new_client.client_ip_address) == 0)
+                {
+                  printf("The pending messages of the new client  is:%s\n", buffered_messages[i].buffered_message);
+                  send(new_client.sock_decriptor, buffered_messages[i].buffered_message, BUFFER_SIZE, 0); 
+                  buffered_messages.erase(buffered_messages.begin() + i);
+                }
+
+              }
+            }
+            
+          }
             }
             fflush(stdout);
           } else {
@@ -295,7 +316,27 @@ int server_starter_function(int argc, char **argv)
                 fflush(stdout);
               } else if (strcmp(command, SEND_COMMAND) == 0) {
               // Check for the SEND command.
-                // Logic for send command.
+                printf("Got a send command\n");
+                int socket_to_send = search_client(tokenized_command[1],list_of_clients);
+                if (socket_to_send > 0)
+                {
+                  if(send(socket_to_send, tokenized_command[2], strlen(tokenized_command[2]), 0) == strlen(tokenized_command[2]))
+                    printf("Transmitted to client!\n");  
+                }
+                else
+                {
+                  /*Case to cache the stuff in the buffer */
+                  int sending_client_index = 0;
+                  int status = get_client_data_from_sock(sock_index, &list_of_clients, &sending_client_index); 
+                  buffered_data new_message;
+                  strcpy(new_message.client_send_ip_address,list_of_clients[sending_client_index].client_ip_address);
+                  strcpy(new_message.client_recieving_ip_address,tokenized_command[1]);
+                  strcpy(new_message.buffered_message,tokenized_command[2]);
+                  buffered_messages.push_back(new_message);
+                  printf("Added the new message to the buffer\n");
+                  printf("Buffer size is : %d\n",buffered_messages.size() );
+
+                }
               } else if(strcmp(command, BROADCAST_COMMAND) == 0) {
               // Check for BROADCAST command.
                 // Logic for BROADCAST command.
@@ -398,3 +439,22 @@ struct client_data add_new_client(int &fdsocket,struct sockaddr_in& client_addr)
   new_client.status = 1;
   return new_client;
 }
+
+
+/* Function that takes domain address & port and looks for the corresponding file descriptor*/
+
+int search_client(char *client_ip_address,std::vector<client_data>& list_of_clients)
+{
+  for(int i = 0; i < list_of_clients.size();i++)
+  {
+    
+    if (strcmp(client_ip_address,list_of_clients[i].client_ip_address) == 0)
+    {
+      return list_of_clients[i].sock_decriptor;
+    }
+  }
+
+  return -1;
+}
+
+
