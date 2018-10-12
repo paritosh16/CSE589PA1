@@ -75,7 +75,7 @@ int server_starter_function(int argc, char **argv)
   char device_hostname[100];
   char device_ip_address[100];
   char result_string[100];
-
+  char end_of_message[] = "end_of_message";
   /* Data Structure for client*/
   std::vector<client_data> list_of_clients;
 
@@ -301,6 +301,7 @@ int server_starter_function(int argc, char **argv)
               char *serialized_data = (char*) malloc(sizeof(char)*BUFFER_SIZE);
               int serialize_status = serialize_client_data(&list_of_clients, serialized_data);
               send(new_client.sock_decriptor, serialized_data, BUFFER_SIZE, 0);
+              printf("Done sending the serialized data\n");
 
               // print the buffer so far
               ptr = 0;
@@ -321,7 +322,10 @@ int server_starter_function(int argc, char **argv)
                 }
 
               } // end of while loop looking for the buffer messages
-              send(sock_index, "end_of_message", 14, 0);
+              printf("End of checking the buffer\n");
+              printf("%s\n",end_of_message );
+              send(fdaccept,end_of_message,strlen(end_of_message), 0);
+              printf("Sent confirmation to client\n");
             }
             
             fflush(stdout);

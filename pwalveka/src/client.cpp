@@ -192,7 +192,10 @@ int client_starter_function(int argc, char **argv)
 								strcpy(result_string, "[LOGIN:SUCCESS]\n");
 								cse4589_print_and_log(result_string);	
 								/* Initialize buffer to receieve response */
-								while(true)
+								bool recieve_from_server = true;
+								
+
+								while(recieve_from_server)
 								{
 									char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
 									memset(buffer, '\0', BUFFER_SIZE);
@@ -205,7 +208,8 @@ int client_starter_function(int argc, char **argv)
 									}
 									if(strcmp(buffer,"end_of_message")  == 0)
 									{
-										break;
+
+										recieve_from_server = false;
 									}
 								}
 								strcpy(result_string, "[LOGIN:END]\n");
@@ -239,13 +243,24 @@ int client_starter_function(int argc, char **argv)
 								memset(buffer, '\0', BUFFER_SIZE);
 								strcpy(result_string, "[LOGIN:SUCCESS]\n");
 								cse4589_print_and_log(result_string);
+								printf("First time log-in and waiting for serialized data \n");	
+								if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
+									printf("Waiting to deserialize\n");
+									int deserialize_status = deserialize_client_data(&all_clients, buffer);
+									is_logged_in = true;
+									printf("Done recieving the serialized string\n");
+								}
+								printf("Waiting for confirmation from sever\n");
+								if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
+										printf("Message recieved %s\n",buffer );
+									}
+								printf("MEssage recieved\n");
+								/*
+								printf("Entering the loop\n");
 								while(true)
 								{
 									if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
-									int deserialize_status = deserialize_client_data(&all_clients, buffer);
-									// TODO: Print out the buffered messages here.
-									is_logged_in = true;
-									
+										printf("Message recieved %s\n",buffer );
 									}
 									if(strcmp(buffer,"end_of_message")  == 0)
 									{
@@ -253,6 +268,7 @@ int client_starter_function(int argc, char **argv)
 									}
 
 								}
+								*/
 								strcpy(result_string, "[LOGIN:END]\n");
 								cse4589_print_and_log(result_string);
 
@@ -443,3 +459,4 @@ int connect_to_host(char *server_ip, int server_port, int port_number)
 
     return fdsocket;
 }
+
