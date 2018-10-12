@@ -256,8 +256,15 @@ int client_starter_function(int argc, char **argv)
 							fflush(stdout);
 						} else if(strcmp(command, SEND_COMMAND) == 0){
 						// Check for the SEND command.
+							
 							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
+							{
 								printf("Done senfing it to the server\n");
+								strcpy(result_string, "[SEND:SUCCESS]\n[SEND:END]\n");
+								cse4589_print_and_log(result_string);
+								
+							}
+
 							fflush(stdout);
 						} else if(strcmp(command, LIST_COMMAND) == 0) {
 						// Check for the LIST command.
@@ -280,7 +287,12 @@ int client_starter_function(int argc, char **argv)
 						} else if(strcmp(command, BROADCAST_COMMAND) == 0){
 						// Check for the BROADCAST command.
 							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
+							{
 								printf("Done senfing it to the server\n");
+								strcpy(result_string, "[SEND:SUCCESS]\n[SEND:END]\n");
+								cse4589_print_and_log(result_string);
+							}
+								
 							fflush(stdout);
 						} else if(strcmp(command, BLOCK_COMMAND) == 0){
 						// Check for the BLOCK command.
