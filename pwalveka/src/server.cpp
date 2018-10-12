@@ -306,9 +306,7 @@ int server_starter_function(int argc, char **argv)
               int ptr = 0;
               while(ptr < buffered_messages.size())
               {
-                printf("The client sending ip is : %s\n",buffered_messages[ptr].client_send_ip_address);
-                printf("The client recieving ip is : %s\n",buffered_messages[ptr].client_recieving_ip_address);
-                printf("The message is : %s\n",buffered_messages[ptr].buffered_message);
+                
                 if (strcmp(buffered_messages[ptr].client_recieving_ip_address,new_client.client_ip_address) == 0)
                 {
                   printf("The pending messages of the new client  is:%s\n", buffered_messages[ptr].buffered_message);
@@ -372,14 +370,22 @@ int server_starter_function(int argc, char **argv)
               } else if (strcmp(command, SEND_COMMAND) == 0) {
               // Check for the SEND command.
                 int socket_to_send = search_client(tokenized_command[1],list_of_clients);
-                if (socket_to_send > 0)
+                bool cacheFlag = TRUE;
+
+                if (socket_to_send > 0 )
                 {
 
                   search_status = get_client_data_from_sock(sock_index, &list_of_clients, &sending_client_index); 
+                  if (list_of_clients[sending_client_index].status == 1)
+                  {
                   send_result = send_message_to_client(socket_to_send,list_of_clients[sending_client_index].client_ip_address,tokenized_command[1],tokenized_command[2],result_string);
                   log_send_message_event(socket_to_send,list_of_clients[sending_client_index].client_ip_address,tokenized_command[1],tokenized_command[2],result_string); 
+                  cacheFlag = FALSE;
+                  }
+
                 }
-                else
+                /*Case when message is not trasmitted and is cached*/
+                if(cacheFlag)
                 {
                   /*Case to cache the stuff in the buffer */
                   sending_client_index = 0;
