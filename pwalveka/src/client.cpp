@@ -189,7 +189,7 @@ int client_starter_function(int argc, char **argv)
 								if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
 									printf("Already Logged in! Notifying the server.\n");
 								}
-								
+
 								/* Initialize buffer to receieve response */
 								char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
 								memset(buffer, '\0', BUFFER_SIZE);
@@ -202,12 +202,12 @@ int client_starter_function(int argc, char **argv)
 								}
 
 								bool get_backlog = true;
-								char *message = (char*) malloc(sizeof(char)*BUFFER_SIZE);
-								memset(message, '\0', BUFFER_SIZE);
 								printf("Waiting for confirmation from sever\n");
 								while(get_backlog) {
+									char *message = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+									memset(message, '\0', BUFFER_SIZE);
 									if(recv(server, message, BUFFER_SIZE, 0) >= 0){
-										printf("Message recieved %s\n", buffer );
+										printf("Message recieved :%s\n", message );
 										if(strcmp(message, "end_of_message") == 0) {
 											// The end of all the buffered messages.
 											get_backlog = false;
@@ -224,6 +224,7 @@ int client_starter_function(int argc, char **argv)
 											fflush(stdout);
 										}
 									}
+									free(message);
 								}
 								strcpy(result_string, "[LOGIN:SUCCESS]\n");
 								cse4589_print_and_log(result_string);
@@ -264,10 +265,10 @@ int client_starter_function(int argc, char **argv)
 								}
 
 								bool get_backlog = true;
-								char *message = (char*) malloc(sizeof(char)*BUFFER_SIZE);
-								memset(message, '\0', BUFFER_SIZE);
 								printf("Waiting for confirmation from sever\n");
 								while(get_backlog) {
+									char *message = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+									memset(message, '\0', BUFFER_SIZE);
 									if(recv(server, message, BUFFER_SIZE, 0) >= 0){
 										printf("Message recieved %s\n", buffer );
 										if(strcmp(message, "end_of_message") == 0) {
@@ -286,6 +287,7 @@ int client_starter_function(int argc, char **argv)
 											fflush(stdout);
 										}
 									}
+									free(message);
 								}
 								strcpy(result_string, "[LOGIN:SUCCESS]\n");
 								cse4589_print_and_log(result_string);
