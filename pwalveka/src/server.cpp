@@ -448,19 +448,28 @@ int server_starter_function(int argc, char **argv)
               // Check for BLOCK command.
                 int index;
                 char ip_address[100];
+                char block_response[100];
                 strcpy(ip_address, tokenized_command[1]);
                 // Get the client details
                 int status = get_client_data_from_sock(sock_index, &list_of_clients, &index);
                 // Check if key is present in the map.
                 if (block_list.find(list_of_clients[index].client_ip_address) != block_list.end()) {
                   // Contains the key.
-                  block_list[list_of_clients[index].client_ip_address].push_back(std::string(tokenized_command[1]));
+                  // Find if the IP address is already blocked.
+                  if (std::find(block_list[list_of_clients[index].client_ip_address].begin(), block_list[list_of_clients[index].client_ip_address].end(), tokenized_command[1]) != block_list[list_of_clients[index].client_ip_address].end()) {
+                    // IP address exists, send an error message.
+                    strcpy(block_response, "ERROR");
+                  } else {
+                    // Need to push the IP address.
+                    block_list[list_of_clients[index].client_ip_address].push_back(std::string(tokenized_command[1]));
+                    strcpy(block_response, "BLOCK");
+                  }
                 } else {
                   // First ever block operation, need to create a key.
                   block_list[list_of_clients[index].client_ip_address] = std::vector<std::string>();
                   block_list[list_of_clients[index].client_ip_address].push_back(std::string(tokenized_command[1]));
+                  strcpy(block_response, "BLOCK");
                 }
-                char* block_response = "BLOCK";
                 if(send(sock_index, block_response, strlen(block_response), 0) == strlen(block_response))
                   printf("BLOCK done!\n");
                 fflush(stdout);
@@ -502,7 +511,6 @@ int server_starter_function(int argc, char **argv)
 /* Function that registers a new client to the currently listening clients
   This is done by adding the clients to the list of master list
 */
-
 int register_client(int& server_socket,struct sockaddr_in& client_addr,fd_set& master_list,int& head_socket)
 {
   int new_socket_descriptor = 0;
@@ -523,6 +531,7 @@ int register_client(int& server_socket,struct sockaddr_in& client_addr,fd_set& m
 
 }
 
+/* Add a new client to the list of clients.*/
 struct client_data add_new_client(int &fdsocket,struct sockaddr_in& client_addr)
 {
   client_data new_client;
@@ -542,9 +551,7 @@ struct client_data add_new_client(int &fdsocket,struct sockaddr_in& client_addr)
   return new_client;
 }
 
-
 /* Function that takes domain address & port and looks for the corresponding file descriptor*/
-
 int search_client(char *client_ip_address,std::vector<client_data>& list_of_clients)
 {
   for(int i = 0; i < list_of_clients.size();i++)
@@ -558,7 +565,6 @@ int search_client(char *client_ip_address,std::vector<client_data>& list_of_clie
 
   return -1;
 }
-
 
 /* Function that sends message to a client*/
 int send_message_to_client(int socket_to_send,char *from_client_ip,char *to_client_ip,char *message,char *result_string)
@@ -582,7 +588,6 @@ int send_message_to_client(int socket_to_send,char *from_client_ip,char *to_clie
   return -1;
 }
 
-
 /*Function that logs the event message on succeful transmit*/
 void log_send_message_event(int socket_to_send,char *from_client_ip,char *to_client_ip,char *message,char *result_string)
 {
@@ -592,5 +597,4 @@ void log_send_message_event(int socket_to_send,char *from_client_ip,char *to_cli
     cse4589_print_and_log(result_string);
     sprintf(result_string,"[RELAYED:END]\n");
     cse4589_print_and_log(result_string);
-
 }
