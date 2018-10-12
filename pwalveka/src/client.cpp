@@ -189,7 +189,8 @@ int client_starter_function(int argc, char **argv)
 								if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
 									printf("Already Logged in! Notifying the server.\n");
 								}
-
+								strcpy(result_string, "[LOGIN:SUCCESS]\n");
+								cse4589_print_and_log(result_string);	
 								/* Initialize buffer to receieve response */
 								while(true)
 								{
@@ -200,8 +201,7 @@ int client_starter_function(int argc, char **argv)
 										all_clients.clear();
 										int deserialize_status = deserialize_client_data(&all_clients, buffer);
 										is_logged_in = true;
-										strcpy(result_string, "[LOGIN:SUCCESS]\n");
-										cse4589_print_and_log(result_string);
+										
 									}
 									if(strcmp(buffer,"end_of_message")  == 0)
 									{
@@ -237,15 +237,15 @@ int client_starter_function(int argc, char **argv)
 								/* Initialize buffer to receieve response */
 								char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
 								memset(buffer, '\0', BUFFER_SIZE);
-
+								strcpy(result_string, "[LOGIN:SUCCESS]\n");
+								cse4589_print_and_log(result_string);
 								while(true)
 								{
 									if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
 									int deserialize_status = deserialize_client_data(&all_clients, buffer);
 									// TODO: Print out the buffered messages here.
 									is_logged_in = true;
-									strcpy(result_string, "[LOGIN:SUCCESS]\n");
-									cse4589_print_and_log(result_string);
+									
 									}
 									if(strcmp(buffer,"end_of_message")  == 0)
 									{
