@@ -428,6 +428,11 @@ int server_starter_function(int argc, char **argv)
                 list_of_clients[index].status = 0;
                 // Delete all the state of the client.
                 list_of_clients.erase(list_of_clients.begin() + index);
+                std::map<std::string, std::vector<std::string> >::iterator iter = block_list.find(std::string(list_of_clients[index].client_ip_address));
+                if (iter != block_list.end()) {
+                  // Found a key in the blocked list, need to delete this state as well.
+                  block_list.erase(iter);
+                }
                 // EXIT confirmation.
                 char* exit_response = "EXIT";
                 if(send(sock_index, exit_response, strlen(exit_response), 0) == strlen(exit_response))
