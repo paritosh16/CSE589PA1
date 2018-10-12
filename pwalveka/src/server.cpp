@@ -376,6 +376,8 @@ int server_starter_function(int argc, char **argv)
                 {
 
                   search_status = get_client_data_from_sock(sock_index, &list_of_clients, &sending_client_index); 
+                  int index_to_send = -1;
+                  search_status = get_client_data_from_sock(socket_to_send, &list_of_clients, &index_to_send); 
                   if (list_of_clients[sending_client_index].status == 1)
                   {
                   send_result = send_message_to_client(socket_to_send,list_of_clients[sending_client_index].client_ip_address,tokenized_command[1],tokenized_command[2],result_string);
