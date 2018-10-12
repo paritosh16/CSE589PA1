@@ -320,7 +320,8 @@ int server_starter_function(int argc, char **argv)
                   ptr = ptr + 1;
                 }
 
-              }
+              } // end of while loop looking for the buffer messages
+              send(sock_index, "end_of_message", 14, 0);
             }
             
             fflush(stdout);
@@ -384,7 +385,8 @@ int server_starter_function(int argc, char **argv)
                     ptr = ptr + 1;
                   }
 
-                }
+                } // end of loop looking for the messages in the buffer
+                send(sock_index, "end_of_message", 14, 0);
 
 
                 fflush(stdout);

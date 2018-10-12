@@ -191,16 +191,26 @@ int client_starter_function(int argc, char **argv)
 								}
 
 								/* Initialize buffer to receieve response */
-								char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
-								memset(buffer, '\0', BUFFER_SIZE);
+								while(true)
+								{
+									char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+									memset(buffer, '\0', BUFFER_SIZE);
 
-								if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
-									all_clients.clear();
-									int deserialize_status = deserialize_client_data(&all_clients, buffer);
-									is_logged_in = true;
-									strcpy(result_string, "[LOGIN:SUCCESS]\n[LOGIN:END]\n");
-									cse4589_print_and_log(result_string);
+									if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
+										all_clients.clear();
+										int deserialize_status = deserialize_client_data(&all_clients, buffer);
+										is_logged_in = true;
+										strcpy(result_string, "[LOGIN:SUCCESS]\n");
+										cse4589_print_and_log(result_string);
+									}
+									if(strcmp(buffer,"end_of_message")  == 0)
+									{
+										break;
+									}
 								}
+								strcpy(result_string, "[LOGIN:END]\n");
+								cse4589_print_and_log(result_string);
+								
 								fflush(stdout);
 							} else {
 							// Need to create a socket as this is the very first time that the client is logging in.
@@ -228,13 +238,24 @@ int client_starter_function(int argc, char **argv)
 								char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
 								memset(buffer, '\0', BUFFER_SIZE);
 
-								if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
+								while(true)
+								{
+									if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
 									int deserialize_status = deserialize_client_data(&all_clients, buffer);
 									// TODO: Print out the buffered messages here.
 									is_logged_in = true;
-									strcpy(result_string, "[LOGIN:SUCCESS]\n[LOGIN:END]\n");
+									strcpy(result_string, "[LOGIN:SUCCESS]\n");
 									cse4589_print_and_log(result_string);
+									}
+									if(strcmp(buffer,"end_of_message")  == 0)
+									{
+										break;
+									}
+
 								}
+								strcpy(result_string, "[LOGIN:END]\n");
+								cse4589_print_and_log(result_string);
+
 								fflush(stdout);							
 							}
 						} else if(strcmp(command, REFRESH_COMMAND) == 0){
