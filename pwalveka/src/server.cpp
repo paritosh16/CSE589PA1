@@ -313,8 +313,8 @@ int server_starter_function(int argc, char **argv)
                 {
                   printf("The pending messages of the new client  is:%s\n", buffered_messages[ptr].buffered_message);
                   //send(new_client.sock_decriptor, buffered_messages[i].buffered_message, BUFFER_SIZE, 0); 
-                  send_result = send_message_to_client(new_client.sock_decriptor,buffered_messages[ptr].client_recieving_ip_address,buffered_messages[ptr].client_send_ip_address,buffered_messages[ptr].buffered_message,result_string);
-                  log_send_message_event(new_client.sock_decriptor,buffered_messages[ptr].client_recieving_ip_address,buffered_messages[ptr].client_send_ip_address,buffered_messages[ptr].buffered_message,result_string);
+                  send_result = send_message_to_client(new_client.sock_decriptor,buffered_messages[ptr].client_send_ip_address,buffered_messages[ptr].client_recieving_ip_address,buffered_messages[ptr].buffered_message,result_string);
+                  log_send_message_event(new_client.sock_decriptor,buffered_messages[ptr].client_send_ip_address,buffered_messages[ptr].client_recieving_ip_address,buffered_messages[ptr].buffered_message,result_string);
                   buffered_messages.erase(buffered_messages.begin() + ptr);
                 }
                 else
