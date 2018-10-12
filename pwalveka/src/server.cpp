@@ -356,7 +356,7 @@ int server_starter_function(int argc, char **argv)
                     printf("Done sending to %s\n",list_of_clients[i].client_name);
                   }*/
                 }
-                log_send_message_event(list_of_clients[0].sock_decriptor,list_of_clients[sock_index].client_ip_address,"255.255.255.255",tokenized_command[1],result_string);
+                log_send_message_event(list_of_clients[0].sock_decriptor,list_of_clients[sending_client_index].client_ip_address,"255.255.255.255",tokenized_command[1],result_string);
 
               } else if(strcmp(command, LOGOUT_COMMAND) == 0) {
               // Check for LOGOUT command.
