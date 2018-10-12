@@ -482,6 +482,7 @@ int send_message_to_client(int socket_to_send,char *from_client_ip,char *to_clie
   transmit_string.append(message);
   char transmitting_string[BUFFER_SIZE] ;
   strcpy(transmitting_string, transmit_string.c_str());
+  printf("tramsit string is: %s\n", transmitting_string);
   if(send(socket_to_send, transmitting_string, strlen(transmitting_string), 0) == strlen(transmitting_string))
   {
     sprintf(result_string, "[RELAYED:SUCCESS]\n");
