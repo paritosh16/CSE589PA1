@@ -193,15 +193,44 @@ int client_starter_function(int argc, char **argv)
 								/* Initialize buffer to receieve response */
 								char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
 								memset(buffer, '\0', BUFFER_SIZE);
-
+								printf("First time log-in and waiting for serialized data \n");	
 								if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
-									all_clients.clear();
+									printf("Waiting to deserialize\n");
 									int deserialize_status = deserialize_client_data(&all_clients, buffer);
 									is_logged_in = true;
-									strcpy(result_string, "[LOGIN:SUCCESS]\n[LOGIN:END]\n");
-									cse4589_print_and_log(result_string);
+									printf("Done recieving the serialized string\n");
 								}
-								fflush(stdout);
+
+								bool get_backlog = true;
+								printf("Waiting for confirmation from sever\n");
+								while(get_backlog) {
+									char *message = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+									memset(message, '\0', BUFFER_SIZE);
+									if(recv(server, message, BUFFER_SIZE, 0) >= 0){
+										printf("Message recieved :%s\n", message );
+										if(strcmp(message, "end_of_message") == 0) {
+											// The end of all the buffered messages.
+											get_backlog = false;
+										} else {
+											// This is a message and should be displayed.
+											tokenize_status = tokenize_command(&server_response, message);
+											sprintf(result_string, "[RECEIVED:SUCCESS]\n");
+											cse4589_print_and_log(result_string);
+											sprintf(result_string,"msg from:%s\n[msg]:%s\n", server_response[0], server_response[1]);
+											cse4589_print_and_log(result_string);
+											sprintf(result_string,"[RECEIVED:END]\n");
+											cse4589_print_and_log(result_string);
+											server_response.clear();
+											fflush(stdout);
+										}
+									}
+									free(message);
+								}
+								strcpy(result_string, "[LOGIN:SUCCESS]\n");
+								cse4589_print_and_log(result_string);
+								strcpy(result_string, "[LOGIN:END]\n");
+								cse4589_print_and_log(result_string);
+								fflush(stdout);	
 							} else {
 							// Need to create a socket as this is the very first time that the client is logging in.
 								char* server_ip = tokenized_command[1];
@@ -227,14 +256,43 @@ int client_starter_function(int argc, char **argv)
 								/* Initialize buffer to receieve response */
 								char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
 								memset(buffer, '\0', BUFFER_SIZE);
-
+								printf("First time log-in and waiting for serialized data \n");	
 								if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
+									printf("Waiting to deserialize\n");
 									int deserialize_status = deserialize_client_data(&all_clients, buffer);
-									// TODO: Print out the buffered messages here.
 									is_logged_in = true;
-									strcpy(result_string, "[LOGIN:SUCCESS]\n[LOGIN:END]\n");
-									cse4589_print_and_log(result_string);
+									printf("Done recieving the serialized string\n");
 								}
+
+								bool get_backlog = true;
+								printf("Waiting for confirmation from sever\n");
+								while(get_backlog) {
+									char *message = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+									memset(message, '\0', BUFFER_SIZE);
+									if(recv(server, message, BUFFER_SIZE, 0) >= 0){
+										printf("Message recieved %s\n", buffer );
+										if(strcmp(message, "end_of_message") == 0) {
+											// The end of all the buffered messages.
+											get_backlog = false;
+										} else {
+											// This is a message and should be displayed.
+											tokenize_status = tokenize_command(&server_response, message);
+											sprintf(result_string, "[RECEIVED:SUCCESS]\n");
+											cse4589_print_and_log(result_string);
+											sprintf(result_string,"msg from:%s\n[msg]:%s\n", server_response[0], server_response[1]);
+											cse4589_print_and_log(result_string);
+											sprintf(result_string,"[RECEIVED:END]\n");
+											cse4589_print_and_log(result_string);
+											server_response.clear();
+											fflush(stdout);
+										}
+									}
+									free(message);
+								}
+								strcpy(result_string, "[LOGIN:SUCCESS]\n");
+								cse4589_print_and_log(result_string);
+								strcpy(result_string, "[LOGIN:END]\n");
+								cse4589_print_and_log(result_string);
 								fflush(stdout);							
 							}
 						} else if(strcmp(command, REFRESH_COMMAND) == 0){
@@ -422,3 +480,4 @@ int connect_to_host(char *server_ip, int server_port, int port_number)
 
     return fdsocket;
 }
+

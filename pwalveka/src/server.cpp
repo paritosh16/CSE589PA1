@@ -68,14 +68,14 @@ int server_starter_function(int argc, char **argv)
   /*Init. Logger*/
 	cse4589_init_log(argv[2]);
 
-  int port, server_socket, head_socket, selret, sock_index, fdaccept=0,search_status,send_result,sending_client_index;
+  int port, server_socket, head_socket, selret, sock_index, fdaccept=0,search_status,send_result,sending_client_index,ptr;
   struct sockaddr_in server_addr, client_addr;
   fd_set master_list, watch_list;
   socklen_t caddr_len;
   char device_hostname[100];
   char device_ip_address[100];
   char result_string[100];
-
+  char end_of_message[] = "end_of_message";
   /* Data Structure for client*/
   std::vector<client_data> list_of_clients;
 
@@ -301,23 +301,31 @@ int server_starter_function(int argc, char **argv)
               char *serialized_data = (char*) malloc(sizeof(char)*BUFFER_SIZE);
               int serialize_status = serialize_client_data(&list_of_clients, serialized_data);
               send(new_client.sock_decriptor, serialized_data, BUFFER_SIZE, 0);
+              printf("Done sending the serialized data\n");
 
               // print the buffer so far
-              for(int i = 0; i < buffered_messages.size();i++)
+              ptr = 0;
+              while(ptr < buffered_messages.size())
               {
-                printf("The client sending ip is : %s\n",buffered_messages[i].client_send_ip_address);
-                printf("The client recieving ip is : %s\n",buffered_messages[i].client_recieving_ip_address);
-                printf("The message is : %s\n",buffered_messages[i].buffered_message);
-                if (strcmp(buffered_messages[i].client_recieving_ip_address,new_client.client_ip_address) == 0)
+                
+                if (strcmp(buffered_messages[ptr].client_recieving_ip_address,new_client.client_ip_address) == 0)
                 {
-                  printf("The pending messages of the new client  is:%s\n", buffered_messages[i].buffered_message);
+                  printf("The pending messages of the new client  is:%s\n", buffered_messages[ptr].buffered_message);
                   //send(new_client.sock_decriptor, buffered_messages[i].buffered_message, BUFFER_SIZE, 0); 
-                  send_result = send_message_to_client(new_client.sock_decriptor,buffered_messages[i].client_recieving_ip_address,buffered_messages[i].client_send_ip_address,buffered_messages[i].buffered_message,result_string);
-                  log_send_message_event(new_client.sock_decriptor,buffered_messages[i].client_recieving_ip_address,buffered_messages[i].client_send_ip_address,buffered_messages[i].buffered_message,result_string);
-                  buffered_messages.erase(buffered_messages.begin() + i);
+                  send_result = send_message_to_client(new_client.sock_decriptor,buffered_messages[ptr].client_send_ip_address,buffered_messages[ptr].client_recieving_ip_address,buffered_messages[ptr].buffered_message,result_string);
+                  log_send_message_event(new_client.sock_decriptor,buffered_messages[ptr].client_send_ip_address,buffered_messages[ptr].client_recieving_ip_address,buffered_messages[ptr].buffered_message,result_string);
+                  buffered_messages.erase(buffered_messages.begin() + ptr);
+                }
+                else
+                {
+                  ptr = ptr + 1;
                 }
 
-              }
+              } // end of while loop looking for the buffer messages
+              printf("End of checking the buffer\n");
+              printf("%s\n",end_of_message );
+              send(fdaccept,end_of_message,strlen(end_of_message), 0);
+              printf("Sent confirmation to client\n");
             }
             
             fflush(stdout);
@@ -363,18 +371,50 @@ int server_starter_function(int argc, char **argv)
                 int serialize_status = serialize_client_data(&list_of_clients, serialized_data);
                 if(send(sock_index, serialized_data, BUFFER_SIZE, 0) == BUFFER_SIZE)
                   printf("LOGIN (for already logged-in client) done!\n");
+                  /*Add block for sending message to logged in commands*/
+                  ptr = 0;
+                  while(ptr < buffered_messages.size())
+                  {
+                  
+                  if (strcmp(buffered_messages[ptr].client_recieving_ip_address,list_of_clients[index].client_ip_address) == 0)
+                  {
+                    printf("The pending messages of the re-loggen in client  is:%s\n", buffered_messages[ptr].buffered_message);
+                    //send(new_client.sock_decriptor, buffered_messages[i].buffered_message, BUFFER_SIZE, 0); 
+                    send_result = send_message_to_client(sock_index,buffered_messages[ptr].client_send_ip_address,buffered_messages[ptr].client_recieving_ip_address,buffered_messages[ptr].buffered_message,result_string);
+                    log_send_message_event(sock_index,buffered_messages[ptr].client_send_ip_address,buffered_messages[ptr].client_recieving_ip_address,buffered_messages[ptr].buffered_message,result_string);
+                    buffered_messages.erase(buffered_messages.begin() + ptr);
+                  }
+                  else
+                  {
+                    ptr = ptr + 1;
+                  }
+
+                } // end of loop looking for the messages in the buffer
+                send(sock_index, "end_of_message", 14, 0);
+
+
                 fflush(stdout);
               } else if (strcmp(command, SEND_COMMAND) == 0) {
               // Check for the SEND command.
                 int socket_to_send = search_client(tokenized_command[1],list_of_clients);
-                if (socket_to_send > 0)
+                bool cacheFlag = true;
+
+                if (socket_to_send > 0 )
                 {
 
                   search_status = get_client_data_from_sock(sock_index, &list_of_clients, &sending_client_index); 
+                  int index_to_send = -1;
+                  search_status = get_client_data_from_sock(socket_to_send, &list_of_clients, &index_to_send); 
+                  if (list_of_clients[index_to_send].status > 0)
+                  {
                   send_result = send_message_to_client(socket_to_send,list_of_clients[sending_client_index].client_ip_address,tokenized_command[1],tokenized_command[2],result_string);
                   log_send_message_event(socket_to_send,list_of_clients[sending_client_index].client_ip_address,tokenized_command[1],tokenized_command[2],result_string); 
+                  cacheFlag = false;
+                  }
+
                 }
-                else
+                /*Case when message is not trasmitted and is cached*/
+                if(cacheFlag)
                 {
                   /*Case to cache the stuff in the buffer */
                   sending_client_index = 0;
@@ -397,7 +437,25 @@ int server_starter_function(int argc, char **argv)
                 {
                   if (list_of_clients[i].sock_decriptor != sock_index)
                   {
-                    send_result = send_message_to_client(list_of_clients[i].sock_decriptor,list_of_clients[sending_client_index].client_ip_address,"255.255.255.255",tokenized_command[1],result_string);  
+                    if (list_of_clients[i].status > 0)
+                    {
+                      send_result = send_message_to_client(list_of_clients[i].sock_decriptor,list_of_clients[sending_client_index].client_ip_address,"255.255.255.255",tokenized_command[1],result_string);    
+                    }
+                    else
+                    {
+                      /*Case to cache the stuff in the buffer */
+                    sending_client_index = 0;
+                    search_status = get_client_data_from_sock(sock_index, &list_of_clients, &sending_client_index); 
+                    buffered_data new_message;
+                    strcpy(new_message.client_send_ip_address,list_of_clients[sending_client_index].client_ip_address);
+                    strcpy(new_message.client_recieving_ip_address,list_of_clients[i].client_ip_address);
+                    strcpy(new_message.buffered_message,tokenized_command[1]);
+                    buffered_messages.push_back(new_message);
+                    printf("Added the new message to the buffer\n");
+                    printf("Buffer size is : %d\n",buffered_messages.size() );
+                    printf("IP message of the new message added is : %s\n", new_message.client_recieving_ip_address);
+                    }
+                    
                   }
                   
                   /*if(send(list_of_clients[i].sock_decriptor, tokenized_command[1], strlen(tokenized_command[1]), 0) == strlen(tokenized_command[1]))
