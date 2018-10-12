@@ -296,8 +296,34 @@ int client_starter_function(int argc, char **argv)
 							fflush(stdout);
 						} else if(strcmp(command, BLOCK_COMMAND) == 0){
 						// Check for the BLOCK command.
+							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
+								printf("Done!\n");
+							}
+
+							/* Initialize buffer to receieve response */
+							char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+							memset(buffer, '\0', BUFFER_SIZE);
+
+							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
+								strcpy(result_string, "[BLOCK:SUCCESS]\n[BLOCK:END]\n");
+								cse4589_print_and_log(result_string);
+							}
+							fflush(stdout);						
 						} else if(strcmp(command, UNBLOCK_COMMAND) == 0){
 						// Check for the UNBLOCK command.
+							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
+								printf("Done!\n");
+							}
+
+							/* Initialize buffer to receieve response */
+							char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+							memset(buffer, '\0', BUFFER_SIZE);
+
+							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
+								strcpy(result_string, "[UNBLOCK:SUCCESS]\n[UNBLOCK:END]\n");
+								cse4589_print_and_log(result_string);
+							}
+							fflush(stdout);						
 						} else if(strcmp(command, LOGOUT_COMMAND)== 0){
 						// Check for the LOGOUT command.
 							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {

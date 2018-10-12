@@ -32,7 +32,7 @@
 *.app
 
 # VS Code
-.vscode/**
+.vscode/**/*
 
 # Logger file for MacOSX
 #pwalveka/src/logger.cpp
