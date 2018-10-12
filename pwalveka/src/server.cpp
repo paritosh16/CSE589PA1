@@ -255,20 +255,35 @@ int server_starter_function(int argc, char **argv)
 							cse4589_print_and_log(result_string);	              
             } else if(strcmp(command, BLOCKED_COMMAND) == 0) {
             // Check for the blocked command.
-              strcpy(result_string, "[BLOCKED:SUCCESS]\n");
-							cse4589_print_and_log(result_string);
-              int sr_no = 1;
-              for(int i = 0; i < block_list[tokenized_command[1]].size(); i++) {
-                int index;
-                // Get the client details
-                int status = get_client_data_from_ip(block_list[tokenized_command[1]].at(i).c_str(), &list_of_clients, &index);
-                sprintf(result_string, "%-5d%-35s%-20s%-8d\n", sr_no, list_of_clients[index].client_name,list_of_clients[index].client_ip_address, list_of_clients[index].client_port);
-									cse4589_print_and_log(result_string);
-                  sr_no++;
+              int is_address_valid = is_ip_address_valid(tokenized_command[1]);
+              if (!is_address_valid) {
+                // Address not valid. Print error.
+                strcpy(result_string, "[BLOCKED:ERROR]\n[BLOCKED:END]\n");
+							  cse4589_print_and_log(result_string);
+              } else {
+                std::map<std::string, std::vector<std::string> >::iterator iter = block_list.find(tokenized_command[1]);
+                if (iter != block_list.end()) {
+                  // Found the key. Now print the list.
+                  strcpy(result_string, "[BLOCKED:SUCCESS]\n");
+                  cse4589_print_and_log(result_string);
+                  int sr_no = 1;
+                  for(int i = 0; i < block_list[tokenized_command[1]].size(); i++) {
+                    int index;
+                    // Get the client details
+                    int status = get_client_data_from_ip(block_list[tokenized_command[1]].at(i).c_str(), &list_of_clients, &index);
+                    sprintf(result_string, "%-5d%-35s%-20s%-8d\n", sr_no, list_of_clients[index].client_name,list_of_clients[index].client_ip_address, list_of_clients[index].client_port);
+                      cse4589_print_and_log(result_string);
+                      sr_no++;
+                  }
+                  strcpy(result_string, "[BLOCKED:END]\n");
+                  cse4589_print_and_log(result_string);
+                  fflush(stdout);                  
+                } else {
+                  // IP address was valid, but cannot find it in the list. Print error.
+                  strcpy(result_string, "[BLOCKED:ERROR]\n[BLOCKED:END]\n");
+							    cse4589_print_and_log(result_string);
+                }
               }
-              strcpy(result_string, "[BLOCKED:END]\n");
-							cse4589_print_and_log(result_string);
-              fflush(stdout);
             } else {
               // TODO: This is the wrong command. Need to check with the requorements to see if any exception has to ber raised for the auto grader.
             }

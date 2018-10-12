@@ -172,3 +172,9 @@ int get_client_data_from_ip(const char ip_address[100], std::vector<client_data>
   }
   return 0;
 }
+
+/* Function that tells if the ip address is valid.*/
+int is_ip_address_valid(char ip_address[100]) {
+  char dummy_address[100];
+  return inet_pton(AF_INET, ip_address, dummy_address);;
+}
