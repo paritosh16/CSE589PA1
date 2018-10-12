@@ -334,19 +334,42 @@ int client_starter_function(int argc, char **argv)
 							}						
 						} else if(strcmp(command, UNBLOCK_COMMAND) == 0){
 						// Check for the UNBLOCK command.
-							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
-								printf("Done!\n");
-							}
-
-							/* Initialize buffer to receieve response */
-							char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
-							memset(buffer, '\0', BUFFER_SIZE);
-
-							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
-								strcpy(result_string, "[UNBLOCK:SUCCESS]\n[UNBLOCK:END]\n");
+							int is_address_valid = is_ip_address_valid(tokenized_command[1]);
+							if(!is_address_valid) {
+								// Address is not valid, print ERROR.
+								strcpy(result_string, "[UNBLOCK:ERROR]\n[UNBLOCK:END]\n");
 								cse4589_print_and_log(result_string);
-							}
-							fflush(stdout);						
+							} else {
+								// Address is valid, go ahead.
+								// Check if the addess is in the current list.
+								int index = -1;
+								int search_status = get_client_data_from_ip(tokenized_command[1], &all_clients, &index);
+								if (index == -1) {
+									// The IP to unblock was not present in the current list. Print ERROR.
+									strcpy(result_string, "[UNBLOCK:ERROR]\n[UNBLOCK:END]\n");
+									cse4589_print_and_log(result_string);									
+								} else {
+									if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
+										printf("Done!\n");
+									}
+
+									/* Initialize buffer to receieve response */
+									char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+									memset(buffer, '\0', BUFFER_SIZE);
+
+									if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
+										if(strcmp(buffer, "ERROR") == 0) {
+											// Server sent error. Print error.
+											strcpy(result_string, "[UNBLOCK:ERROR]\n[UNBLOCK:END]\n");
+											cse4589_print_and_log(result_string);
+										} else {
+											strcpy(result_string, "[UNBLOCK:SUCCESS]\n[UNBLOCK:END]\n");
+											cse4589_print_and_log(result_string);
+										}
+									}
+									fflush(stdout);
+								}								
+							}												
 						} else if(strcmp(command, LOGOUT_COMMAND)== 0){
 						// Check for the LOGOUT command.
 							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
