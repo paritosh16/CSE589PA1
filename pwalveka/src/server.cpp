@@ -333,6 +333,13 @@ int server_starter_function(int argc, char **argv)
                   buffered_messages.push_back(new_message);
                   printf("Added the new message to the buffer\n");
                   printf("Buffer size is : %d\n",buffered_messages.size() );
+                  for(int i = 0;i < buffered_messages.size();i++)
+                  {
+                    printf("Buffered message # : $d\n",i+1);
+                    printf("%s\n",buffered_messages[i].client_send_ip_address );
+                    printf("%s\n",buffered_messages[i].client_recieving_ip_address );
+                    printf("%s\n",buffered_messages[i].buffered_message );
+                  }
 
                 }
               } else if(strcmp(command, BROADCAST_COMMAND) == 0) {
