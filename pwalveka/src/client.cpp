@@ -57,7 +57,7 @@ int client_starter_function(int argc, char **argv)
 		exit(-1);
 	}
 	
-	int head_socket, selret, server, sock_index = 0;
+	int head_socket, selret, server, sock_index = 0,tokenize_status;
 	fd_set master_list, watch_list;
 
 	// Grab the port number that the client will listen for incoming connections on.
@@ -66,6 +66,8 @@ int client_starter_function(int argc, char **argv)
 	// Maintain the list of all the clients.
 	std::vector<client_data> all_clients;
 
+	// vector representing the input from the server
+	std::vector<char*> server_response;
 	// Boolean to keep a track of whether the client is logged in or not.
 	bool is_logged_in = false;
 
@@ -200,7 +202,6 @@ int client_starter_function(int argc, char **argv)
 									cse4589_print_and_log(result_string);
 								}
 								fflush(stdout);
-
 							} else {
 							// Need to create a socket as this is the very first time that the client is logging in.
 								char* server_ip = tokenized_command[1];
@@ -255,8 +256,15 @@ int client_starter_function(int argc, char **argv)
 							fflush(stdout);
 						} else if(strcmp(command, SEND_COMMAND) == 0){
 						// Check for the SEND command.
+							
 							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
-								printf("Done!\n");
+							{
+								printf("Done senfing it to the server\n");
+								strcpy(result_string, "[SEND:SUCCESS]\n[SEND:END]\n");
+								cse4589_print_and_log(result_string);
+								
+							}
+
 							fflush(stdout);
 						} else if(strcmp(command, LIST_COMMAND) == 0) {
 						// Check for the LIST command.
@@ -278,6 +286,14 @@ int client_starter_function(int argc, char **argv)
 							cse4589_print_and_log(result_string);	
 						} else if(strcmp(command, BROADCAST_COMMAND) == 0){
 						// Check for the BROADCAST command.
+							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
+							{
+								printf("Done senfing it to the server\n");
+								strcpy(result_string, "[BROADCAST:SUCCESS]\n[BROADCAST:END]\n");
+								cse4589_print_and_log(result_string);
+							}
+								
+							fflush(stdout);
 						} else if(strcmp(command, BLOCK_COMMAND) == 0){
 						// Check for the BLOCK command.
 							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
@@ -350,8 +366,18 @@ int client_starter_function(int argc, char **argv)
 							char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
 							memset(buffer, '\0', BUFFER_SIZE);
 
+
 							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
 								printf("Server responded:%s\n", buffer);
+              					tokenize_status = tokenize_command(&server_response, buffer);
+								//cse4589_print_and_log("[EVENT]: Message Relayed\n");
+								sprintf(result_string, "[RECEIVED:SUCCESS]\n");
+							    cse4589_print_and_log(result_string);
+							    sprintf(result_string,"msg from:%s\n[msg]:%s\n", server_response[0], server_response[1]);
+							    cse4589_print_and_log(result_string);
+							    sprintf(result_string,"[RECEIVED:END]\n");
+							    cse4589_print_and_log(result_string);
+							    server_response.clear();
 								fflush(stdout);
 							}
 					}
