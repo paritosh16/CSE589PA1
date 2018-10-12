@@ -184,10 +184,74 @@ int client_starter_function(int argc, char **argv)
 							cse4589_print_and_log(result_string);
 						} else if(strcmp(command, LOGIN_COMMAND) == 0) {
 						// Check for the LOGIN command. 
-							if(is_logged_in) {
-							// No need to create socket. Just let the server know that the client has logged in.
+							int is_address_valid = is_ip_address_valid(tokenized_command[1]);
+							int is_port_valid = is_port_number_valid(tokenized_command[2]);
+							if(!is_address_valid || !is_port_valid) {
+								// Either of them is invalid. Print error.
+								strcpy(result_string, "[LOGIN:ERROR]\n[LOGIN:END]\n");
+							  cse4589_print_and_log(result_string);
+							} else {
+								// IP address and PORT number are valid.
+								if(is_logged_in) {
+								// No need to create socket. Just let the server know that the client has logged in.
+									if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
+										printf("Already Logged in! Notifying the server.\n");
+									}
+
+									/* Initialize buffer to receieve response */
+									char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+									memset(buffer, '\0', BUFFER_SIZE);
+
+									if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
+										all_clients.clear();
+										int deserialize_status = deserialize_client_data(&all_clients, buffer);
+										is_logged_in = true;
+										strcpy(result_string, "[LOGIN:SUCCESS]\n[LOGIN:END]\n");
+										cse4589_print_and_log(result_string);
+									}
+									fflush(stdout);
+								} else {
+								// Need to create a socket as this is the very first time that the client is logging in.
+									char* server_ip = tokenized_command[1];
+									int server_port = atoi(tokenized_command[2]);
+
+									server = connect_to_host(server_ip, server_port, atoi(port_number));
+
+									/* Adding the new socket to the currently watched sockets.*/
+									FD_SET(server, &master_list);
+									if(server > head_socket) head_socket = server;
+
+									printf("Server Object:%d\n", server);
+									printf("Server IP:%s\n", server_ip);
+									printf("Server Port:%d\n", server_port);
+									
+									printf("I got: %s(size:%d chars)\n", command_to_send, strlen(command_to_send));
+
+									printf("\nSENDing it to the remote server ... \n");
+									// if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
+									// 		printf("Done!\n");
+									// fflush(stdout);
+
+									/* Initialize buffer to receieve response */
+									char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+									memset(buffer, '\0', BUFFER_SIZE);
+
+									if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
+										int deserialize_status = deserialize_client_data(&all_clients, buffer);
+										// TODO: Print out the buffered messages here.
+										is_logged_in = true;
+										strcpy(result_string, "[LOGIN:SUCCESS]\n[LOGIN:END]\n");
+										cse4589_print_and_log(result_string);
+									}
+									fflush(stdout);							
+								}
+							}
+						} else if(strcmp(command, REFRESH_COMMAND) == 0){
+						// Check for the REFRESH command.
+							if (is_logged_in) {
+							// Logged in, can execute the command.
 								if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
-									printf("Already Logged in! Notifying the server.\n");
+									printf("Done!\n");
 								}
 
 								/* Initialize buffer to receieve response */
@@ -197,209 +261,217 @@ int client_starter_function(int argc, char **argv)
 								if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
 									all_clients.clear();
 									int deserialize_status = deserialize_client_data(&all_clients, buffer);
-									is_logged_in = true;
-									strcpy(result_string, "[LOGIN:SUCCESS]\n[LOGIN:END]\n");
+									strcpy(result_string, "[REFRESH:SUCCESS]\n[REFRESH:END]\n");
 									cse4589_print_and_log(result_string);
 								}
 								fflush(stdout);
 							} else {
-							// Need to create a socket as this is the very first time that the client is logging in.
-								char* server_ip = tokenized_command[1];
-								int server_port = atoi(tokenized_command[2]);
+							// Not logged in, cannot execute the command.
+								printf("Clien did not login. Cannot execute command. Please login first.");
+								strcpy(result_string, "[REFRESH:ERROR]\n[REFRESH:END]\n");
+								cse4589_print_and_log(result_string);
+								fflush(stdout);
+							}
+						} else if(strcmp(command, SEND_COMMAND) == 0){
+						// Check for the SEND command.
+              if (is_logged_in) {
+							// Logged in, can execute the command.
+								int is_address_valid = is_ip_address_valid(tokenized_command[1]);
+								if(!is_address_valid) {
+									// Address is not valid, print ERROR.
+									strcpy(result_string, "[SEND:ERROR]\n[SEND:END]\n");
+									cse4589_print_and_log(result_string);
+								} else {
+									// Address is valid, go ahead.
+									// Check if the addess is in the current list.
+									int index = -1;
+									int search_status = get_client_data_from_ip(tokenized_command[1], &all_clients, &index);
+									if (index == -1) {
+										// The IP to block was not present in the current list. Print ERROR.
+										strcpy(result_string, "[SEND:ERROR]\n[SEND:END]\n");
+										cse4589_print_and_log(result_string);									
+									} else {
+										// All good captain, go ahead and send that message.
+										if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
+										{
+											printf("Done senfing it to the server\n");
+											strcpy(result_string, "[SEND:SUCCESS]\n[SEND:END]\n");
+											cse4589_print_and_log(result_string);	
+										}
+										fflush(stdout);
+									}
+								}
+							} else {
+							// Not logged in, cannot execute the command.
+								printf("Clien did not login. Cannot execute command. Please login first.");
+								strcpy(result_string, "[SEND:ERROR]\n[SEND:END]\n");
+								cse4589_print_and_log(result_string);
+								fflush(stdout);
+							}						
+						} else if(strcmp(command, LIST_COMMAND) == 0) {
+						// Check for the LIST command.
+              if (is_logged_in) {
+							// Logged in, can execute the command.
+								strcpy(result_string, "[LIST:SUCCESS]\n");
+								cse4589_print_and_log(result_string);
+								std::sort(all_clients.begin(), all_clients.end(), comparator_client_data_port);
+								int size = static_cast<int>(all_clients.size());
+								int sr_no = 1;
+								for(int i=0; i < size; i++) {
+									char result_string[100];
+									if(all_clients[i].status == 1) {
+										sprintf(result_string, "%-5d%-35s%-20s%-8d\n", sr_no, all_clients[i].client_name, all_clients[i].client_ip_address, all_clients[i].client_port);
+										cse4589_print_and_log(result_string);
+										sr_no++;
+									}
+									fflush(stdout);
+								}	
+								strcpy(result_string, "[LIST:END]\n");
+								cse4589_print_and_log(result_string);	
+							} else {
+							// Not logged in, cannot execute the command.
+								printf("Clien did not login. Cannot execute command. Please login first.");
+								strcpy(result_string, "[LIST:ERROR]\n[LIST:END]\n");
+								cse4589_print_and_log(result_string);
+								fflush(stdout);
+							}						
+						} else if(strcmp(command, BROADCAST_COMMAND) == 0){
+						// Check for the BROADCAST command.
+              if (is_logged_in) {
+							// Logged in, can execute the command.
+								if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
+								{
+									printf("Done senfing it to the server\n");
+									strcpy(result_string, "[BROADCAST:SUCCESS]\n[BROADCAST:END]\n");
+									cse4589_print_and_log(result_string);
+								}
+								fflush(stdout);
+							} else {
+							// Not logged in, cannot execute the command.
+								printf("Clien did not login. Cannot execute command. Please login first.");
+								strcpy(result_string, "[BROADCAST:ERROR]\n[BROADCAST:END]\n");
+								cse4589_print_and_log(result_string);
+								fflush(stdout);
+							}						
+						} else if(strcmp(command, BLOCK_COMMAND) == 0){
+						// Check for the BLOCK command.
+              if (is_logged_in) {
+							// Logged in, can execute the command.
+								int is_address_valid = is_ip_address_valid(tokenized_command[1]);
+								if(!is_address_valid) {
+									// Address is not valid, print ERROR.
+									strcpy(result_string, "[BLOCK:ERROR]\n[BLOCK:END]\n");
+									cse4589_print_and_log(result_string);
+								} else {
+									// Address is valid, go ahead.
+									// Check if the addess is in the current list.
+									int index = -1;
+									int search_status = get_client_data_from_ip(tokenized_command[1], &all_clients, &index);
+									if (index == -1) {
+										// The IP to block was not present in the current list. Print ERROR.
+										strcpy(result_string, "[BLOCK:ERROR]\n[BLOCK:END]\n");
+										cse4589_print_and_log(result_string);									
+									} else {
+										// All good captain, go ahead and block.
+										if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
+											printf("Done!\n");
+										}
 
-								server = connect_to_host(server_ip, server_port, atoi(port_number));
+										/* Initialize buffer to receieve response */
+										char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+										memset(buffer, '\0', BUFFER_SIZE);
 
-								/* Adding the new socket to the currently watched sockets.*/
-								FD_SET(server, &master_list);
-								if(server > head_socket) head_socket = server;
+										if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
+											if(strcmp(buffer, "ERROR") == 0) {
+												// Server sent error. Print error.
+												strcpy(result_string, "[BLOCK:ERROR]\n[BLOCK:END]\n");
+												cse4589_print_and_log(result_string);
+											} else {
+												strcpy(result_string, "[BLOCK:SUCCESS]\n[BLOCK:END]\n");
+												cse4589_print_and_log(result_string);
+											}
+										}
+										fflush(stdout);
+									}
+								}	
+							} else {
+							// Not logged in, cannot execute the command.
+								printf("Clien did not login. Cannot execute command. Please login first.");
+								strcpy(result_string, "[BLOCK:ERROR]\n[BLOCK:END]\n");
+								cse4589_print_and_log(result_string);
+								fflush(stdout);
+							}											
+						} else if(strcmp(command, UNBLOCK_COMMAND) == 0){
+						// Check for the UNBLOCK command.
+              if (is_logged_in) {
+							// Logged in, can execute the command.
+								int is_address_valid = is_ip_address_valid(tokenized_command[1]);
+								if(!is_address_valid) {
+									// Address is not valid, print ERROR.
+									strcpy(result_string, "[UNBLOCK:ERROR]\n[UNBLOCK:END]\n");
+									cse4589_print_and_log(result_string);
+								} else {
+									// Address is valid, go ahead.
+									// Check if the addess is in the current list.
+									int index = -1;
+									int search_status = get_client_data_from_ip(tokenized_command[1], &all_clients, &index);
+									if (index == -1) {
+										// The IP to unblock was not present in the current list. Print ERROR.
+										strcpy(result_string, "[UNBLOCK:ERROR]\n[UNBLOCK:END]\n");
+										cse4589_print_and_log(result_string);									
+									} else {
+										if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
+											printf("Done!\n");
+										}
 
-								printf("Server Object:%d\n", server);
-								printf("Server IP:%s\n", server_ip);
-								printf("Server Port:%d\n", server_port);
-								
-								printf("I got: %s(size:%d chars)\n", command_to_send, strlen(command_to_send));
+										/* Initialize buffer to receieve response */
+										char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
+										memset(buffer, '\0', BUFFER_SIZE);
 
-								printf("\nSENDing it to the remote server ... \n");
-								// if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
-								// 		printf("Done!\n");
-								// fflush(stdout);
+										if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
+											if(strcmp(buffer, "ERROR") == 0) {
+												// Server sent error. Print error.
+												strcpy(result_string, "[UNBLOCK:ERROR]\n[UNBLOCK:END]\n");
+												cse4589_print_and_log(result_string);
+											} else {
+												strcpy(result_string, "[UNBLOCK:SUCCESS]\n[UNBLOCK:END]\n");
+												cse4589_print_and_log(result_string);
+											}
+										}
+										fflush(stdout);
+									}								
+								}						
+							} else {
+							// Not logged in, cannot execute the command.
+								printf("Clien did not login. Cannot execute command. Please login first.");
+								strcpy(result_string, "[UNBLOCK:ERROR]\n[UNBLOCK:END]\n");
+								cse4589_print_and_log(result_string);
+								fflush(stdout);
+							}												
+						} else if(strcmp(command, LOGOUT_COMMAND)== 0){
+						// Check for the LOGOUT command.
+              if (is_logged_in) {
+							// Logged in, can execute the command.
+								if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
+									printf("Done!\n");
+								}
 
 								/* Initialize buffer to receieve response */
 								char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
 								memset(buffer, '\0', BUFFER_SIZE);
 
 								if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
-									int deserialize_status = deserialize_client_data(&all_clients, buffer);
-									// TODO: Print out the buffered messages here.
-									is_logged_in = true;
-									strcpy(result_string, "[LOGIN:SUCCESS]\n[LOGIN:END]\n");
+									strcpy(result_string, "[LOGOUT:SUCCESS]\n[LOGOUT:END]\n");
 									cse4589_print_and_log(result_string);
-								}
-								fflush(stdout);							
-							}
-						} else if(strcmp(command, REFRESH_COMMAND) == 0){
-						// Check for the REFRESH command.
-							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
-								printf("Done!\n");
-							}
-
-							/* Initialize buffer to receieve response */
-							char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
-							memset(buffer, '\0', BUFFER_SIZE);
-
-							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
-								all_clients.clear();
-								int deserialize_status = deserialize_client_data(&all_clients, buffer);
-								strcpy(result_string, "[REFRESH:SUCCESS]\n[REFRESH:END]\n");
-								cse4589_print_and_log(result_string);
-							}
-							fflush(stdout);
-						} else if(strcmp(command, SEND_COMMAND) == 0){
-						// Check for the SEND command.
-						int is_address_valid = is_ip_address_valid(tokenized_command[1]);
-							if(!is_address_valid) {
-								// Address is not valid, print ERROR.
-								strcpy(result_string, "[SEND:ERROR]\n[SEND:END]\n");
-								cse4589_print_and_log(result_string);
-							} else {
-								// Address is valid, go ahead.
-								// Check if the addess is in the current list.
-								int index = -1;
-								int search_status = get_client_data_from_ip(tokenized_command[1], &all_clients, &index);
-								if (index == -1) {
-									// The IP to block was not present in the current list. Print ERROR.
-									strcpy(result_string, "[SEND:ERROR]\n[SEND:END]\n");
-									cse4589_print_and_log(result_string);									
-								} else {
-									// All good captain, go ahead and send that message.
-									if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
-									{
-										printf("Done senfing it to the server\n");
-										strcpy(result_string, "[SEND:SUCCESS]\n[SEND:END]\n");
-										cse4589_print_and_log(result_string);	
-									}
-									fflush(stdout);
-								}
-							}
-						} else if(strcmp(command, LIST_COMMAND) == 0) {
-						// Check for the LIST command.
-							strcpy(result_string, "[LIST:SUCCESS]\n");
-							cse4589_print_and_log(result_string);
-							std::sort(all_clients.begin(), all_clients.end(), comparator_client_data_port);
-							int size = static_cast<int>(all_clients.size());
-							int sr_no = 1;
-							for(int i=0; i < size; i++) {
-								char result_string[100];
-								if(all_clients[i].status == 1) {
-									sprintf(result_string, "%-5d%-35s%-20s%-8d\n", sr_no, all_clients[i].client_name, all_clients[i].client_ip_address, all_clients[i].client_port);
-									cse4589_print_and_log(result_string);
-									sr_no++;
 								}
 								fflush(stdout);
-							}	
-							strcpy(result_string, "[LIST:END]\n");
-							cse4589_print_and_log(result_string);	
-						} else if(strcmp(command, BROADCAST_COMMAND) == 0){
-						// Check for the BROADCAST command.
-							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
-							{
-								printf("Done senfing it to the server\n");
-								strcpy(result_string, "[BROADCAST:SUCCESS]\n[BROADCAST:END]\n");
-								cse4589_print_and_log(result_string);
-							}
-							fflush(stdout);
-						} else if(strcmp(command, BLOCK_COMMAND) == 0){
-						// Check for the BLOCK command.
-							int is_address_valid = is_ip_address_valid(tokenized_command[1]);
-							if(!is_address_valid) {
-								// Address is not valid, print ERROR.
-								strcpy(result_string, "[BLOCK:ERROR]\n[BLOCK:END]\n");
-								cse4589_print_and_log(result_string);
 							} else {
-								// Address is valid, go ahead.
-								// Check if the addess is in the current list.
-								int index = -1;
-								int search_status = get_client_data_from_ip(tokenized_command[1], &all_clients, &index);
-								if (index == -1) {
-									// The IP to block was not present in the current list. Print ERROR.
-									strcpy(result_string, "[BLOCK:ERROR]\n[BLOCK:END]\n");
-									cse4589_print_and_log(result_string);									
-								} else {
-									// All good captain, go ahead and block.
-									if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
-										printf("Done!\n");
-									}
-
-									/* Initialize buffer to receieve response */
-									char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
-									memset(buffer, '\0', BUFFER_SIZE);
-
-									if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
-										if(strcmp(buffer, "ERROR") == 0) {
-											// Server sent error. Print error.
-											strcpy(result_string, "[BLOCK:ERROR]\n[BLOCK:END]\n");
-											cse4589_print_and_log(result_string);
-										} else {
-											strcpy(result_string, "[BLOCK:SUCCESS]\n[BLOCK:END]\n");
-											cse4589_print_and_log(result_string);
-										}
-									}
-									fflush(stdout);
-								}
+							// Not logged in, cannot execute the command.
+								printf("Clien did not login. Cannot execute command. Please login first.");
+								strcpy(result_string, "[LOGOUT:ERROR]\n[LOGOUT:END]\n");
+								cse4589_print_and_log(result_string);
+								fflush(stdout);
 							}						
-						} else if(strcmp(command, UNBLOCK_COMMAND) == 0){
-						// Check for the UNBLOCK command.
-							int is_address_valid = is_ip_address_valid(tokenized_command[1]);
-							if(!is_address_valid) {
-								// Address is not valid, print ERROR.
-								strcpy(result_string, "[UNBLOCK:ERROR]\n[UNBLOCK:END]\n");
-								cse4589_print_and_log(result_string);
-							} else {
-								// Address is valid, go ahead.
-								// Check if the addess is in the current list.
-								int index = -1;
-								int search_status = get_client_data_from_ip(tokenized_command[1], &all_clients, &index);
-								if (index == -1) {
-									// The IP to unblock was not present in the current list. Print ERROR.
-									strcpy(result_string, "[UNBLOCK:ERROR]\n[UNBLOCK:END]\n");
-									cse4589_print_and_log(result_string);									
-								} else {
-									if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
-										printf("Done!\n");
-									}
-
-									/* Initialize buffer to receieve response */
-									char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
-									memset(buffer, '\0', BUFFER_SIZE);
-
-									if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
-										if(strcmp(buffer, "ERROR") == 0) {
-											// Server sent error. Print error.
-											strcpy(result_string, "[UNBLOCK:ERROR]\n[UNBLOCK:END]\n");
-											cse4589_print_and_log(result_string);
-										} else {
-											strcpy(result_string, "[UNBLOCK:SUCCESS]\n[UNBLOCK:END]\n");
-											cse4589_print_and_log(result_string);
-										}
-									}
-									fflush(stdout);
-								}								
-							}												
-						} else if(strcmp(command, LOGOUT_COMMAND)== 0){
-						// Check for the LOGOUT command.
-							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
-								printf("Done!\n");
-							}
-
-							/* Initialize buffer to receieve response */
-							char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
-							memset(buffer, '\0', BUFFER_SIZE);
-
-							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
-								strcpy(result_string, "[LOGOUT:SUCCESS]\n[LOGOUT:END]\n");
-								cse4589_print_and_log(result_string);
-							}
-							fflush(stdout);
 						} else if(strcmp(command, EXIT_COMMAND) == 0){
 						// Check for the EXIT command.
 							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
@@ -415,7 +487,7 @@ int client_starter_function(int argc, char **argv)
 								//cse4589_print_and_log(result_string);
 								exit(0);
 							}
-							fflush(stdout);
+							fflush(stdout);					
 						} else {
 						// TODO: This is the wrong command. Need to check with the requorements to see if any exception has to ber raised for the auto grader.
 						}
