@@ -289,7 +289,7 @@ int client_starter_function(int argc, char **argv)
 							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
 							{
 								printf("Done senfing it to the server\n");
-								strcpy(result_string, "[SEND:SUCCESS]\n[SEND:END]\n");
+								strcpy(result_string, "[BROADCAST:SUCCESS]\n[BROADCAST:END]\n");
 								cse4589_print_and_log(result_string);
 							}
 								

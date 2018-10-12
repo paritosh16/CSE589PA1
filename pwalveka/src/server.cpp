@@ -487,7 +487,7 @@ int send_message_to_client(int socket_to_send,char *from_client_ip,char *to_clie
     cse4589_print_and_log(result_string);
     sprintf(result_string,"msg from:%s, to:%s\n[msg]:%s\n", from_client_ip, to_client_ip, message);
     cse4589_print_and_log(result_string);
-    sprintf(result_string, "\n[RELAYED:END]\n");
+    sprintf(result_string, "[RELAYED:END]\n");
     cse4589_print_and_log(result_string);
 
     /* Update the statstics*/
