@@ -343,7 +343,11 @@ int server_starter_function(int argc, char **argv)
                 printf("Recieved Broadcast\n");
                 for(int i = 0; i < list_of_clients.size();i++)
                 {
-                  send_result = send_message_to_client(list_of_clients[i].sock_decriptor,list_of_clients[i].client_ip_address,"255.255.255.255",tokenized_command[1],result_string);
+                  if (list_of_clients[i].sock_decriptor != sock_index)
+                  {
+                    send_result = send_message_to_client(list_of_clients[i].sock_decriptor,list_of_clients[i].client_ip_address,"255.255.255.255",tokenized_command[1],result_string);  
+                  }
+                  
                   /*if(send(list_of_clients[i].sock_decriptor, tokenized_command[1], strlen(tokenized_command[1]), 0) == strlen(tokenized_command[1]))
                   {
                     printf("Done sending to %s\n",list_of_clients[i].client_name);

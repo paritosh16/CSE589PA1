@@ -332,12 +332,12 @@ int client_starter_function(int argc, char **argv)
 							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
 								printf("Server responded:%s\n", buffer);
               					tokenize_status = tokenize_command(&server_response, buffer);
-              					printf("msg from:%s\n[msg]:%s\n", server_response[0], server_response[1]);
+								sprintf("[EVENT]: Message Relayed\n");
 								sprintf(result_string, "[RECEIVED:SUCCESS]\n");
 							    cse4589_print_and_log(result_string);
 							    sprintf(result_string,"msg from:%s\n[msg]:%s\n", server_response[0], server_response[1]);
 							    cse4589_print_and_log(result_string);
-							    sprintf(result_string, "\n[RECEIVED:END]\n");
+							    sprintf(result_string, "[RECEIVED:END]\n");
 							    cse4589_print_and_log(result_string);
 
 								fflush(stdout);
