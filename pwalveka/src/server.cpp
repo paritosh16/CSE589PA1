@@ -476,6 +476,7 @@ int server_starter_function(int argc, char **argv)
               } else if(strcmp(command, UNBLOCK_COMMAND) == 0) {
               // Check for UNBLOCK command.
                 int index;
+                char unblock_response[100];
                 // Get the client details
                 int status = get_client_data_from_sock(sock_index, &list_of_clients, &index);
                 // Delete the ip to be unblocked from the vector.
@@ -483,9 +484,12 @@ int server_starter_function(int argc, char **argv)
                 if(iter != block_list[std::string(list_of_clients[index].client_ip_address)].end()) {
                   // Item found. Need to delete this now.
                   block_list[std::string(list_of_clients[index].client_ip_address)].erase(iter);
+                  strcpy(unblock_response, "UNBLOCK");
+                } else {
+                  // Item not found implying the IP to unblock was never blocked.
+                  strcpy(unblock_response, "ERROR");
                 }
-                char* block_response = "UNBLOCK";
-                if(send(sock_index, block_response, strlen(block_response), 0) == strlen(block_response))
+                if(send(sock_index, unblock_response, strlen(unblock_response), 0) == strlen(unblock_response))
                   printf("UNBLOCK done!\n");
                 fflush(stdout);
               } else {
