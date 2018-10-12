@@ -342,6 +342,7 @@ int server_starter_function(int argc, char **argv)
               // Check for BROADCAST command.
                 printf("Recieved Broadcast\n");
                 search_status = get_client_data_from_sock(sock_index, &list_of_clients, &sending_client_index); 
+                printf("The details of the client ip address is:%s \n",list_of_clients[sock_index].client_ip_address);
                 for(int i = 0; i < list_of_clients.size();i++)
                 {
                   if (list_of_clients[i].sock_decriptor != sock_index)
@@ -482,7 +483,7 @@ int send_message_to_client(int socket_to_send,char *from_client_ip,char *to_clie
   transmit_string.append(message);
   char transmitting_string[BUFFER_SIZE] ;
   strcpy(transmitting_string, transmit_string.c_str());
-  printf("tramsit string is: %s\n", transmitting_string);
+  //printf("%s\n",transmitting_string);
   if(send(socket_to_send, transmitting_string, strlen(transmitting_string), 0) == strlen(transmitting_string))
   {
     sprintf(result_string, "[RELAYED:SUCCESS]\n");
