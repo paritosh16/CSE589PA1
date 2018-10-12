@@ -370,7 +370,7 @@ int server_starter_function(int argc, char **argv)
               } else if (strcmp(command, SEND_COMMAND) == 0) {
               // Check for the SEND command.
                 int socket_to_send = search_client(tokenized_command[1],list_of_clients);
-                bool cacheFlag = TRUE;
+                bool cacheFlag = true;
 
                 if (socket_to_send > 0 )
                 {
@@ -380,7 +380,7 @@ int server_starter_function(int argc, char **argv)
                   {
                   send_result = send_message_to_client(socket_to_send,list_of_clients[sending_client_index].client_ip_address,tokenized_command[1],tokenized_command[2],result_string);
                   log_send_message_event(socket_to_send,list_of_clients[sending_client_index].client_ip_address,tokenized_command[1],tokenized_command[2],result_string); 
-                  cacheFlag = FALSE;
+                  cacheFlag = false;
                   }
 
                 }
