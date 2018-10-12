@@ -68,7 +68,7 @@ int server_starter_function(int argc, char **argv)
   /*Init. Logger*/
 	cse4589_init_log(argv[2]);
 
-  int port, server_socket, head_socket, selret, sock_index, fdaccept=0,search_status,send_result,sending_client_index;
+  int port, server_socket, head_socket, selret, sock_index, fdaccept=0,search_status,send_result,sending_client_index,ptr;
   struct sockaddr_in server_addr, client_addr;
   fd_set master_list, watch_list;
   socklen_t caddr_len;
@@ -303,7 +303,7 @@ int server_starter_function(int argc, char **argv)
               send(new_client.sock_decriptor, serialized_data, BUFFER_SIZE, 0);
 
               // print the buffer so far
-              int ptr = 0;
+              ptr = 0;
               while(ptr < buffered_messages.size())
               {
                 
@@ -366,6 +366,27 @@ int server_starter_function(int argc, char **argv)
                 int serialize_status = serialize_client_data(&list_of_clients, serialized_data);
                 if(send(sock_index, serialized_data, BUFFER_SIZE, 0) == BUFFER_SIZE)
                   printf("LOGIN (for already logged-in client) done!\n");
+                  /*Add block for sending message to logged in commands*/
+                  ptr = 0;
+                  while(ptr < buffered_messages.size())
+                  {
+                  
+                  if (strcmp(buffered_messages[ptr].client_recieving_ip_address,list_of_clients[index].client_ip_address) == 0)
+                  {
+                    printf("The pending messages of the re-loggen in client  is:%s\n", buffered_messages[ptr].buffered_message);
+                    //send(new_client.sock_decriptor, buffered_messages[i].buffered_message, BUFFER_SIZE, 0); 
+                    send_result = send_message_to_client(sock_index,buffered_messages[ptr].client_send_ip_address,buffered_messages[ptr].client_recieving_ip_address,buffered_messages[ptr].buffered_message,result_string);
+                    log_send_message_event(sock_index,buffered_messages[ptr].client_send_ip_address,buffered_messages[ptr].client_recieving_ip_address,buffered_messages[ptr].buffered_message,result_string);
+                    buffered_messages.erase(buffered_messages.begin() + ptr);
+                  }
+                  else
+                  {
+                    ptr = ptr + 1;
+                  }
+
+                }
+
+
                 fflush(stdout);
               } else if (strcmp(command, SEND_COMMAND) == 0) {
               // Check for the SEND command.
