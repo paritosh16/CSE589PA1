@@ -448,8 +448,8 @@ int server_starter_function(int argc, char **argv)
                     search_status = get_client_data_from_sock(sock_index, &list_of_clients, &sending_client_index); 
                     buffered_data new_message;
                     strcpy(new_message.client_send_ip_address,list_of_clients[sending_client_index].client_ip_address);
-                    strcpy(new_message.client_recieving_ip_address,tokenized_command[1]);
-                    strcpy(new_message.buffered_message,tokenized_command[2]);
+                    strcpy(new_message.client_recieving_ip_address,list_of_clients[i].client_ip_address);
+                    strcpy(new_message.buffered_message,tokenized_command[1]);
                     buffered_messages.push_back(new_message);
                     printf("Added the new message to the buffer\n");
                     printf("Buffer size is : %d\n",buffered_messages.size() );
