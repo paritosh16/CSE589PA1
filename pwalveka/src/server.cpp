@@ -322,8 +322,8 @@ int server_starter_function(int argc, char **argv)
                 {
 
                   search_status = get_client_data_from_sock(sock_index, &list_of_clients, &sending_client_index); 
-                  send_result = send_message_to_client(socket_to_send,tokenized_command[1],list_of_clients[sending_client_index].client_ip_address,tokenized_command[2],result_string);
-                  log_send_message_event(socket_to_send,tokenized_command[1],list_of_clients[sending_client_index].client_ip_address,tokenized_command[2],result_string); 
+                  send_result = send_message_to_client(socket_to_send,list_of_clients[sending_client_index].client_ip_address,tokenized_command[1],tokenized_command[2],result_string);
+                  log_send_message_event(socket_to_send,list_of_clients[sending_client_index].client_ip_address,tokenized_command[1],tokenized_command[2],result_string); 
                 }
                 else
                 {
