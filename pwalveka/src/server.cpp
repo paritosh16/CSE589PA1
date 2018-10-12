@@ -321,7 +321,7 @@ int server_starter_function(int argc, char **argv)
                 {
 
                   search_status = get_client_data_from_sock(sock_index, &list_of_clients, &sending_client_index); 
-                  send_result = send_message_to_client(socket_to_send,list_of_clients[sending_client_index].client_ip_address,tokenized_command[1],tokenized_command[2],result_string);
+                  send_result = send_message_to_client(socket_to_send,tokenized_command[1],list_of_clients[sending_client_index].client_ip_address,tokenized_command[2],result_string);
                    
                 }
                 else
@@ -341,11 +341,12 @@ int server_starter_function(int argc, char **argv)
               } else if(strcmp(command, BROADCAST_COMMAND) == 0) {
               // Check for BROADCAST command.
                 printf("Recieved Broadcast\n");
+                search_status = get_client_data_from_sock(sock_index, &list_of_clients, &sending_client_index); 
                 for(int i = 0; i < list_of_clients.size();i++)
                 {
                   if (list_of_clients[i].sock_decriptor != sock_index)
                   {
-                    send_result = send_message_to_client(list_of_clients[i].sock_decriptor,list_of_clients[i].client_ip_address,"255.255.255.255",tokenized_command[1],result_string);  
+                    send_result = send_message_to_client(list_of_clients[i].sock_decriptor,list_of_clients[sock_index].client_ip_address,"255.255.255.255",tokenized_command[1],result_string);  
                   }
                   
                   /*if(send(list_of_clients[i].sock_decriptor, tokenized_command[1], strlen(tokenized_command[1]), 0) == strlen(tokenized_command[1]))
@@ -476,7 +477,7 @@ int search_client(char *client_ip_address,std::vector<client_data>& list_of_clie
 int send_message_to_client(int socket_to_send,char *from_client_ip,char *to_client_ip,char *message,char *result_string)
 {
   std::string transmit_string = std::string("");
-  transmit_string.append(to_client_ip);
+  transmit_string.append(from_client_ip);
   transmit_string.append(std::string(" "));
   transmit_string.append(message);
   char transmitting_string[BUFFER_SIZE] ;
