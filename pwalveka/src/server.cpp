@@ -453,6 +453,7 @@ int server_starter_function(int argc, char **argv)
                     buffered_messages.push_back(new_message);
                     printf("Added the new message to the buffer\n");
                     printf("Buffer size is : %d\n",buffered_messages.size() );
+                    printf("IP message of the new message added is : %s\n", new_message.client_recieving_ip_address);
                     }
                     
                   }
