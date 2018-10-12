@@ -474,6 +474,8 @@ int client_starter_function(int argc, char **argv)
 							}						
 						} else if(strcmp(command, EXIT_COMMAND) == 0){
 						// Check for the EXIT command.
+						if (is_logged_in) {
+							// Client logged in. Need to inform server about the exiting.
 							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send)) {
 								printf("Done!\n");
 							}
@@ -487,7 +489,11 @@ int client_starter_function(int argc, char **argv)
 								//cse4589_print_and_log(result_string);
 								exit(0);
 							}
-							fflush(stdout);					
+							fflush(stdout);												
+						} else {
+							// Client hasn't logged in, exit straight away.
+							exit(0);
+						}
 						} else {
 						// TODO: This is the wrong command. Need to check with the requorements to see if any exception has to ber raised for the auto grader.
 						}
