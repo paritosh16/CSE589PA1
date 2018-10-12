@@ -437,7 +437,24 @@ int server_starter_function(int argc, char **argv)
                 {
                   if (list_of_clients[i].sock_decriptor != sock_index)
                   {
-                    send_result = send_message_to_client(list_of_clients[i].sock_decriptor,list_of_clients[sending_client_index].client_ip_address,"255.255.255.255",tokenized_command[1],result_string);  
+                    if (list_of_clients[i].status > 0)
+                    {
+                      send_result = send_message_to_client(list_of_clients[i].sock_decriptor,list_of_clients[sending_client_index].client_ip_address,"255.255.255.255",tokenized_command[1],result_string);    
+                    }
+                    else
+                    {
+                      /*Case to cache the stuff in the buffer */
+                    sending_client_index = 0;
+                    search_status = get_client_data_from_sock(sock_index, &list_of_clients, &sending_client_index); 
+                    buffered_data new_message;
+                    strcpy(new_message.client_send_ip_address,list_of_clients[sending_client_index].client_ip_address);
+                    strcpy(new_message.client_recieving_ip_address,tokenized_command[1]);
+                    strcpy(new_message.buffered_message,tokenized_command[2]);
+                    buffered_messages.push_back(new_message);
+                    printf("Added the new message to the buffer\n");
+                    printf("Buffer size is : %d\n",buffered_messages.size() );
+                    }
+                    
                   }
                   
                   /*if(send(list_of_clients[i].sock_decriptor, tokenized_command[1], strlen(tokenized_command[1]), 0) == strlen(tokenized_command[1]))
