@@ -1,0 +1,4 @@
+[RELAYED:SUCCESS]
+msg from:127.0.0.1, to:127.0.0.1
+[msg]:test
+[RELAYED:END]
