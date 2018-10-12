@@ -256,16 +256,31 @@ int client_starter_function(int argc, char **argv)
 							fflush(stdout);
 						} else if(strcmp(command, SEND_COMMAND) == 0){
 						// Check for the SEND command.
-							
-							if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
-							{
-								printf("Done senfing it to the server\n");
-								strcpy(result_string, "[SEND:SUCCESS]\n[SEND:END]\n");
+						int is_address_valid = is_ip_address_valid(tokenized_command[1]);
+							if(!is_address_valid) {
+								// Address is not valid, print ERROR.
+								strcpy(result_string, "[SEND:ERROR]\n[SEND:END]\n");
 								cse4589_print_and_log(result_string);
-								
+							} else {
+								// Address is valid, go ahead.
+								// Check if the addess is in the current list.
+								int index = -1;
+								int search_status = get_client_data_from_ip(tokenized_command[1], &all_clients, &index);
+								if (index == -1) {
+									// The IP to block was not present in the current list. Print ERROR.
+									strcpy(result_string, "[SEND:ERROR]\n[SEND:END]\n");
+									cse4589_print_and_log(result_string);									
+								} else {
+									// All good captain, go ahead and send that message.
+									if(send(server, command_to_send, strlen(command_to_send), 0) == strlen(command_to_send))
+									{
+										printf("Done senfing it to the server\n");
+										strcpy(result_string, "[SEND:SUCCESS]\n[SEND:END]\n");
+										cse4589_print_and_log(result_string);	
+									}
+									fflush(stdout);
+								}
 							}
-
-							fflush(stdout);
 						} else if(strcmp(command, LIST_COMMAND) == 0) {
 						// Check for the LIST command.
 							strcpy(result_string, "[LIST:SUCCESS]\n");
@@ -407,7 +422,7 @@ int client_starter_function(int argc, char **argv)
 						free(command_to_send);
 						free(cmd);
 					} else {
-						// Receive from socket.
+					// Receive from socket.
 						/* Initialize buffer to receieve response */
 							char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
 							memset(buffer, '\0', BUFFER_SIZE);
