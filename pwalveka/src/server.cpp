@@ -400,23 +400,31 @@ int server_starter_function(int argc, char **argv)
               // Check for the SEND command.
                 int socket_to_send = search_client(tokenized_command[1],list_of_clients);
                 bool cacheFlag = true;
-
                 if (socket_to_send > 0 )
                 {
-
                   search_status = get_client_data_from_sock(sock_index, &list_of_clients, &sending_client_index); 
                   int index_to_send = -1;
                   search_status = get_client_data_from_sock(socket_to_send, &list_of_clients, &index_to_send); 
                   // updating stastics to send
                   list_of_clients[sending_client_index].message_sent++;
-                  if (list_of_clients[index_to_send].status > 0)
+                  bool is_blocked = false;
+                  std::map<std::string, std::vector<std::string> >::iterator iter = block_list.find(std::string(list_of_clients[sending_client_index].client_ip_address));
+                  if (iter != block_list.end()) {
+                    // Found the block list of the sending client.
+                    if (std::find(block_list[list_of_clients[sending_client_index].client_ip_address].begin(), block_list[list_of_clients[sending_client_index].client_ip_address].end(), list_of_clients[index_to_send].client_ip_address) != block_list[list_of_clients[sending_client_index].client_ip_address].end()) {
+                      is_blocked = true;
+                    }
+                  }
+                  if (list_of_clients[index_to_send].status > 0 && !is_blocked)
                   {
                   send_result = send_message_to_client(socket_to_send,list_of_clients[sending_client_index].client_ip_address,tokenized_command[1],tokenized_command[2],result_string);
                   log_send_message_event(socket_to_send,list_of_clients[sending_client_index].client_ip_address,tokenized_command[1],tokenized_command[2],result_string); 
                   list_of_clients[index_to_send].message_recieved++;
                   cacheFlag = false;
                   }
-
+                  if(is_blocked) {
+                    cacheFlag = false;
+                  }
                 }
                 /*Case when message is not trasmitted and is cached*/
                 if(cacheFlag)
@@ -440,9 +448,18 @@ int server_starter_function(int argc, char **argv)
                 printf("The details of the client ip address is:%s \n",list_of_clients[sock_index].client_ip_address);
                 // updating statstics for sendig client
                 list_of_clients[sending_client_index].message_sent++;
+                bool is_blocked = false;
+                std::map<std::string, std::vector<std::string> >::iterator iter = block_list.find(std::string(list_of_clients[sending_client_index].client_ip_address));
                 for(int i = 0; i < list_of_clients.size();i++)
                 {
-                  if (list_of_clients[i].sock_decriptor != sock_index)
+                  is_blocked = false;
+                  if (iter != block_list.end()) {
+                    // Found the block list of the sending client.
+                    if (std::find(block_list[list_of_clients[sending_client_index].client_ip_address].begin(), block_list[list_of_clients[sending_client_index].client_ip_address].end(), list_of_clients[i].client_ip_address) != block_list[list_of_clients[sending_client_index].client_ip_address].end()) {
+                      is_blocked = true;
+                    }
+                  }
+                  if ((list_of_clients[i].sock_decriptor != sock_index) || is_blocked)
                   {
                     if (list_of_clients[i].status > 0)
                     {
