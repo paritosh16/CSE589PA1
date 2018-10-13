@@ -444,7 +444,7 @@ int server_starter_function(int argc, char **argv)
                   printf("Buffer size is : %d\n",buffered_messages.size() );
 
                 }
-                free(final_message);
+                strcpy(final_message, "");
               } else if(strcmp(command, BROADCAST_COMMAND) == 0) {
               // Check for BROADCAST command.
                 printf("Recieved Broadcast\n");
