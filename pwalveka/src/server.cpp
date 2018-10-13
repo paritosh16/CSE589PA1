@@ -408,10 +408,10 @@ int server_starter_function(int argc, char **argv)
                   // updating stastics to send
                   list_of_clients[sending_client_index].message_sent++;
                   bool is_blocked = false;
-                  std::map<std::string, std::vector<std::string> >::iterator iter = block_list.find(std::string(list_of_clients[sending_client_index].client_ip_address));
+                  std::map<std::string, std::vector<std::string> >::iterator iter = block_list.find(std::string(list_of_clients[index_to_send].client_ip_address));
                   if (iter != block_list.end()) {
-                    // Found the block list of the sending client.
-                    if (std::find(block_list[list_of_clients[sending_client_index].client_ip_address].begin(), block_list[list_of_clients[sending_client_index].client_ip_address].end(), list_of_clients[index_to_send].client_ip_address) != block_list[list_of_clients[sending_client_index].client_ip_address].end()) {
+                    // Found the block list of the receiving client.
+                    if (std::find(block_list[list_of_clients[index_to_send].client_ip_address].begin(), block_list[list_of_clients[index_to_send].client_ip_address].end(), list_of_clients[sending_client_index].client_ip_address) != block_list[list_of_clients[index_to_send].client_ip_address].end()) {
                       is_blocked = true;
                     }
                   }
@@ -449,13 +449,14 @@ int server_starter_function(int argc, char **argv)
                 // updating statstics for sendig client
                 list_of_clients[sending_client_index].message_sent++;
                 bool is_blocked = false;
-                std::map<std::string, std::vector<std::string> >::iterator iter = block_list.find(std::string(list_of_clients[sending_client_index].client_ip_address));
                 for(int i = 0; i < list_of_clients.size();i++)
                 {
+                  // Find the block list of the reciepient.
+                  std::map<std::string, std::vector<std::string> >::iterator iter = block_list.find(std::string(list_of_clients[i].client_ip_address));
                   is_blocked = false;
                   if (iter != block_list.end()) {
-                    // Found the block list of the sending client.
-                    if (std::find(block_list[list_of_clients[sending_client_index].client_ip_address].begin(), block_list[list_of_clients[sending_client_index].client_ip_address].end(), list_of_clients[i].client_ip_address) != block_list[list_of_clients[sending_client_index].client_ip_address].end()) {
+                    // Found the block list of the recieving client.
+                    if (std::find(block_list[list_of_clients[i].client_ip_address].begin(), block_list[list_of_clients[i].client_ip_address].end(), list_of_clients[sending_client_index].client_ip_address) != block_list[list_of_clients[i].client_ip_address].end()) {
                       is_blocked = true;
                     }
                   }
