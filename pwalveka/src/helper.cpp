@@ -195,3 +195,21 @@ int is_port_number_valid(char port_number[100]) {
     return 0;
   }
 }
+
+/* Function that will create a string of a message containing spaces.*/
+int build_message_string(char* message, std::vector<char*>* tokenized_command) {
+  int size = static_cast<int>((*tokenized_command).size());
+  for(int i = 2; i < size; i++) {
+    strcat(message, (*tokenized_command)[i]);
+  }
+  return 0;
+}
+
+/* Function that will get the message out of the tokenized array sent to the client.*/
+int break_message_string(char* message, std::vector<char*>* tokenized_command) {
+  int size = static_cast<int>((*tokenized_command).size());
+  for(int i = 1; i < size; i++) {
+    strcat(message, (*tokenized_command)[i]);
+  }
+  return 0;
+}

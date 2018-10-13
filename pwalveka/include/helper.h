@@ -39,4 +39,6 @@ int get_client_data_from_sock(int sock_desc, std::vector<client_data>* list_of_c
 int get_client_data_from_ip(const char ip_address[100], std::vector<client_data>* list_of_clients, int* index);
 int is_ip_address_valid(char ip_address[100]);
 int is_port_number_valid(char port_number[100]);
+int build_message_string(char* message, std::vector<char*>* tokenized_command);
+int break_message_string(char* message, std::vector<char*>* tokenized_command);
 #endif

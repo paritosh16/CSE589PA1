@@ -562,18 +562,18 @@ int client_starter_function(int argc, char **argv)
 							char *buffer = (char*) malloc(sizeof(char)*BUFFER_SIZE);
 							memset(buffer, '\0', BUFFER_SIZE);
 
-
 							if(recv(server, buffer, sizeof(client_data) * BUFFER_SIZE, 0) >= 0){
 								printf("Server responded:%s\n", buffer);
-              					tokenize_status = tokenize_command(&server_response, buffer);
-								//cse4589_print_and_log("[EVENT]: Message Relayed\n");
+								tokenize_status = tokenize_command(&server_response, buffer);
+								char final_message[BUFFER_SIZE];
+								int break_string_status = break_message_string(final_message, &server_response);
 								sprintf(result_string, "[RECEIVED:SUCCESS]\n");
-							    cse4589_print_and_log(result_string);
-							    sprintf(result_string,"msg from:%s\n[msg]:%s\n", server_response[0], server_response[1]);
-							    cse4589_print_and_log(result_string);
-							    sprintf(result_string,"[RECEIVED:END]\n");
-							    cse4589_print_and_log(result_string);
-							    server_response.clear();
+								cse4589_print_and_log(result_string);
+								sprintf(result_string,"msg from:%s\n[msg]:%s\n", server_response[0], final_message);
+								cse4589_print_and_log(result_string);
+								sprintf(result_string,"[RECEIVED:END]\n");
+								cse4589_print_and_log(result_string);
+								server_response.clear();
 								fflush(stdout);
 							}
 					}

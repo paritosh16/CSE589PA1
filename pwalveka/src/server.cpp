@@ -400,6 +400,8 @@ int server_starter_function(int argc, char **argv)
               // Check for the SEND command.
                 int socket_to_send = search_client(tokenized_command[1],list_of_clients);
                 bool cacheFlag = true;
+                char final_message[BUFFER_SIZE];
+                int build_message_status = build_message_string(final_message, &tokenized_command);
                 if (socket_to_send > 0 )
                 {
                   search_status = get_client_data_from_sock(sock_index, &list_of_clients, &sending_client_index); 
@@ -418,8 +420,8 @@ int server_starter_function(int argc, char **argv)
                   }
                   if (list_of_clients[index_to_send].status > 0 && !is_blocked)
                   {
-                  send_result = send_message_to_client(socket_to_send,list_of_clients[sending_client_index].client_ip_address,tokenized_command[1],tokenized_command[2],result_string);
-                  log_send_message_event(socket_to_send,list_of_clients[sending_client_index].client_ip_address,tokenized_command[1],tokenized_command[2],result_string); 
+                  send_result = send_message_to_client(socket_to_send,list_of_clients[sending_client_index].client_ip_address,tokenized_command[1], final_message,result_string);
+                  log_send_message_event(socket_to_send,list_of_clients[sending_client_index].client_ip_address,tokenized_command[1], final_message,result_string); 
                   list_of_clients[index_to_send].message_recieved++;
                   cacheFlag = false;
                   }
@@ -436,7 +438,7 @@ int server_starter_function(int argc, char **argv)
                   buffered_data new_message;
                   strcpy(new_message.client_send_ip_address,list_of_clients[sending_client_index].client_ip_address);
                   strcpy(new_message.client_recieving_ip_address,tokenized_command[1]);
-                  strcpy(new_message.buffered_message,tokenized_command[2]);
+                  strcpy(new_message.buffered_message, final_message);
                   buffered_messages.push_back(new_message);
                   printf("Added the new message to the buffer\n");
                   printf("Buffer size is : %d\n",buffered_messages.size() );
