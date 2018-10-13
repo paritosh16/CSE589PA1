@@ -314,6 +314,7 @@ int server_starter_function(int argc, char **argv)
                   //send(new_client.sock_decriptor, buffered_messages[i].buffered_message, BUFFER_SIZE, 0); 
                   send_result = send_message_to_client(new_client.sock_decriptor,buffered_messages[ptr].client_send_ip_address,buffered_messages[ptr].client_recieving_ip_address,buffered_messages[ptr].buffered_message,result_string);
                   log_send_message_event(new_client.sock_decriptor,buffered_messages[ptr].client_send_ip_address,buffered_messages[ptr].client_recieving_ip_address,buffered_messages[ptr].buffered_message,result_string);
+                  new_client.message_recieved++;
                   buffered_messages.erase(buffered_messages.begin() + ptr);
                 }
                 else
@@ -382,6 +383,7 @@ int server_starter_function(int argc, char **argv)
                     //send(new_client.sock_decriptor, buffered_messages[i].buffered_message, BUFFER_SIZE, 0); 
                     send_result = send_message_to_client(sock_index,buffered_messages[ptr].client_send_ip_address,buffered_messages[ptr].client_recieving_ip_address,buffered_messages[ptr].buffered_message,result_string);
                     log_send_message_event(sock_index,buffered_messages[ptr].client_send_ip_address,buffered_messages[ptr].client_recieving_ip_address,buffered_messages[ptr].buffered_message,result_string);
+                    list_of_clients[index].message_recieved++;
                     buffered_messages.erase(buffered_messages.begin() + ptr);
                   }
                   else
@@ -405,10 +407,13 @@ int server_starter_function(int argc, char **argv)
                   search_status = get_client_data_from_sock(sock_index, &list_of_clients, &sending_client_index); 
                   int index_to_send = -1;
                   search_status = get_client_data_from_sock(socket_to_send, &list_of_clients, &index_to_send); 
+                  // updating stastics to send
+                  list_of_clients[sending_client_index].message_sent++;
                   if (list_of_clients[index_to_send].status > 0)
                   {
                   send_result = send_message_to_client(socket_to_send,list_of_clients[sending_client_index].client_ip_address,tokenized_command[1],tokenized_command[2],result_string);
                   log_send_message_event(socket_to_send,list_of_clients[sending_client_index].client_ip_address,tokenized_command[1],tokenized_command[2],result_string); 
+                  list_of_clients[index_to_send].message_recieved++;
                   cacheFlag = false;
                   }
 
@@ -433,13 +438,17 @@ int server_starter_function(int argc, char **argv)
                 printf("Recieved Broadcast\n");
                 search_status = get_client_data_from_sock(sock_index, &list_of_clients, &sending_client_index); 
                 printf("The details of the client ip address is:%s \n",list_of_clients[sock_index].client_ip_address);
+                // updating statstics for sendig client
+                list_of_clients[sending_client_index].message_sent++;
                 for(int i = 0; i < list_of_clients.size();i++)
                 {
                   if (list_of_clients[i].sock_decriptor != sock_index)
                   {
                     if (list_of_clients[i].status > 0)
                     {
-                      send_result = send_message_to_client(list_of_clients[i].sock_decriptor,list_of_clients[sending_client_index].client_ip_address,"255.255.255.255",tokenized_command[1],result_string);    
+                      send_result = send_message_to_client(list_of_clients[i].sock_decriptor,list_of_clients[sending_client_index].client_ip_address,"255.255.255.255",tokenized_command[1],result_string);
+                      list_of_clients[i].message_recieved++;
+                      
                     }
                     else
                     {
@@ -463,6 +472,7 @@ int server_starter_function(int argc, char **argv)
                     printf("Done sending to %s\n",list_of_clients[i].client_name);
                   }*/
                 }
+
                 log_send_message_event(list_of_clients[0].sock_decriptor,list_of_clients[sending_client_index].client_ip_address,"255.255.255.255",tokenized_command[1],result_string);
 
               } else if(strcmp(command, LOGOUT_COMMAND) == 0) {
@@ -587,7 +597,6 @@ struct client_data add_new_client(int &fdsocket,struct sockaddr_in& client_addr)
   int len=100; 
   new_client.sock_decriptor = fdsocket;
   inet_ntop(AF_INET, &(client_addr.sin_addr), new_client.client_ip_address, len);
-  // DEBUG BLOG
   int res = getnameinfo((struct sockaddr *)&client_addr, sizeof(client_addr), new_client.client_ip_address, sizeof(new_client.client_ip_address), NULL, 0, NI_NUMERICHOST);
   int hostname_from_addr = getnameinfo((struct sockaddr *)&client_addr, sizeof(client_addr), new_client.client_name, sizeof(new_client.client_name), NULL, 0, NI_NAMEREQD);
   printf("The ip address of the client is : %s\n", new_client.client_ip_address);
@@ -631,7 +640,8 @@ int send_message_to_client(int socket_to_send,char *from_client_ip,char *to_clie
   if(send(socket_to_send, transmitting_string, strlen(transmitting_string), 0) == strlen(transmitting_string))
   {
     
-    /* Update the statstics*/
+    /* Update the statstics fore receving client*/
+
 
     return 1;
   }
@@ -639,6 +649,8 @@ int send_message_to_client(int socket_to_send,char *from_client_ip,char *to_clie
 
   return -1;
 }
+
+
 
 
 /*Function that logs the event message on succeful transmit*/
