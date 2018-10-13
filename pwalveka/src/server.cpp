@@ -516,25 +516,35 @@ int server_starter_function(int argc, char **argv)
               // Check for BLOCK command.
                 int index;
                 char ip_address[100];
+                char block_response[100];
                 strcpy(ip_address, tokenized_command[1]);
                 // Get the client details
                 int status = get_client_data_from_sock(sock_index, &list_of_clients, &index);
                 // Check if key is present in the map.
                 if (block_list.find(list_of_clients[index].client_ip_address) != block_list.end()) {
                   // Contains the key.
-                  block_list[list_of_clients[index].client_ip_address].push_back(std::string(tokenized_command[1]));
+                  // Find if the IP address is already blocked.
+                  if (std::find(block_list[list_of_clients[index].client_ip_address].begin(), block_list[list_of_clients[index].client_ip_address].end(), tokenized_command[1]) != block_list[list_of_clients[index].client_ip_address].end()) {
+                    // IP address exists, send an error message.
+                    strcpy(block_response, "ERROR");
+                  } else {
+                    // Need to push the IP address.
+                    block_list[list_of_clients[index].client_ip_address].push_back(std::string(tokenized_command[1]));
+                    strcpy(block_response, "BLOCK");
+                  }
                 } else {
                   // First ever block operation, need to create a key.
                   block_list[list_of_clients[index].client_ip_address] = std::vector<std::string>();
                   block_list[list_of_clients[index].client_ip_address].push_back(std::string(tokenized_command[1]));
+                  strcpy(block_response, "BLOCK");
                 }
-                char* block_response = "BLOCK";
                 if(send(sock_index, block_response, strlen(block_response), 0) == strlen(block_response))
                   printf("BLOCK done!\n");
                 fflush(stdout);
               } else if(strcmp(command, UNBLOCK_COMMAND) == 0) {
               // Check for UNBLOCK command.
                 int index;
+                char unblock_response[100];
                 // Get the client details
                 int status = get_client_data_from_sock(sock_index, &list_of_clients, &index);
                 // Delete the ip to be unblocked from the vector.
@@ -542,9 +552,12 @@ int server_starter_function(int argc, char **argv)
                 if(iter != block_list[std::string(list_of_clients[index].client_ip_address)].end()) {
                   // Item found. Need to delete this now.
                   block_list[std::string(list_of_clients[index].client_ip_address)].erase(iter);
+                  strcpy(unblock_response, "UNBLOCK");
+                } else {
+                  // Item not found implying the IP to unblock was never blocked.
+                  strcpy(unblock_response, "ERROR");
                 }
-                char* block_response = "UNBLOCK";
-                if(send(sock_index, block_response, strlen(block_response), 0) == strlen(block_response))
+                if(send(sock_index, unblock_response, strlen(unblock_response), 0) == strlen(unblock_response))
                   printf("UNBLOCK done!\n");
                 fflush(stdout);
               } else {
