@@ -459,13 +459,12 @@ int server_starter_function(int argc, char **argv)
                       is_blocked = true;
                     }
                   }
-                  if ((list_of_clients[i].sock_decriptor != sock_index) || is_blocked)
+                  if ((list_of_clients[i].sock_decriptor != sock_index) && !is_blocked)
                   {
                     if (list_of_clients[i].status > 0)
                     {
                       send_result = send_message_to_client(list_of_clients[i].sock_decriptor,list_of_clients[sending_client_index].client_ip_address,"255.255.255.255",tokenized_command[1],result_string);
-                      list_of_clients[i].message_recieved++;
-                      
+                      list_of_clients[i].message_recieved++;                      
                     }
                     else
                     {
