@@ -413,6 +413,7 @@ int server_starter_function(int argc, char **argv)
                     // Found the block list of the receiving client.
                     if (std::find(block_list[list_of_clients[index_to_send].client_ip_address].begin(), block_list[list_of_clients[index_to_send].client_ip_address].end(), list_of_clients[sending_client_index].client_ip_address) != block_list[list_of_clients[index_to_send].client_ip_address].end()) {
                       is_blocked = true;
+                      printf("The following IP is blocked %s\n", list_of_clients[index_to_send].client_ip_address);
                     }
                   }
                   if (list_of_clients[index_to_send].status > 0 && !is_blocked)
@@ -458,6 +459,7 @@ int server_starter_function(int argc, char **argv)
                     // Found the block list of the recieving client.
                     if (std::find(block_list[list_of_clients[i].client_ip_address].begin(), block_list[list_of_clients[i].client_ip_address].end(), list_of_clients[sending_client_index].client_ip_address) != block_list[list_of_clients[i].client_ip_address].end()) {
                       is_blocked = true;
+                      printf("The following Ip is blocked %s\n", list_of_clients[i].client_ip_address);
                     }
                   }
                   if ((list_of_clients[i].sock_decriptor != sock_index) && !is_blocked)
