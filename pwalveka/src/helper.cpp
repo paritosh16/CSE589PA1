@@ -178,3 +178,20 @@ int is_ip_address_valid(char ip_address[100]) {
   char dummy_address[100];
   return inet_pton(AF_INET, ip_address, dummy_address);;
 }
+
+/* Function to tell if the port number is valid.*/
+int is_port_number_valid(char port_number[100]) {
+  char *marker;
+  int status = strtol(port_number, &marker, 10);
+  if (*marker == 0) {
+    // Marker not set to a string character, is a valid integer.
+    if (status > 0 && status < 65536) {
+      return 1;
+    } else {
+      return 0;
+    }
+  } else {
+    // Has a character that is not valid int. 
+    return 0;
+  }
+}
