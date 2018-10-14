@@ -574,6 +574,7 @@ int client_starter_function(int argc, char **argv)
 								sprintf(result_string,"[RECEIVED:END]\n");
 								cse4589_print_and_log(result_string);
 								server_response.clear();
+								strcpy(final_message, "");
 								fflush(stdout);
 							}
 					}

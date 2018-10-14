@@ -213,6 +213,9 @@ int break_message_string(char* message, std::vector<char*>* tokenized_command) {
   int size = static_cast<int>((*tokenized_command).size());
   for(int i = 1; i < size; i++) {
     strcat(message, (*tokenized_command)[i]);
+    if(i != (size - 1)) {
+      strcat(message, " ");
+    }
   }
   return 0;
 }
